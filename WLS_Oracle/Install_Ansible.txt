@@ -1,0 +1,6 @@
+1. Download latest epel-release rpm from
+	http://download-ib01.fedoraproject.org/pub/epel/7/x86_64/
+2. Install epel-release rpm:
+	# rpm -Uvh epel-release*rpm
+3. Install ansible rpm package:
+	# yum install ansible

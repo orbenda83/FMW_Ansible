@@ -1,0 +1,8 @@
+---
+- name: template and copy wlst script file for starting domain.
+  template:
+    src: start_clusters.py.j2
+    dest: "{{ working_directory }}/start_clusters.py"
+    mode: 0755
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"

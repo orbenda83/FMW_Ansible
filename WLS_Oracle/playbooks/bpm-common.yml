@@ -1,0 +1,9 @@
+---
+
+- hosts: bpm
+  vars_files:
+    - ../vars/fusion.yml
+    - ../vars/bpm/common.yml
+  roles:
+    - role: common
+     

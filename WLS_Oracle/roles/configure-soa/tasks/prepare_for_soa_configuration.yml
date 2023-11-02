@@ -1,0 +1,8 @@
+---
+- name: template and copy wlst script file for configuring soa infra.
+  template:
+    src: configure-soa-infra.py.j2
+    dest: "{{ working_directory }}/configure-soa-infra.py"
+    mode: 0755
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"

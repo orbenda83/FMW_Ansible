@@ -1,0 +1,15 @@
+USER="{{ wls_admin_user }}"
+PASSWORD="{{ wls_admin_pass }}"
+ADMIN_URL="t3://{{ admin_server_address }}:{{ admin_server_port }}"
+DOMAIN_NAME="{{ wls_domain_name }}"
+
+{% for usr in users %}
+{{ usr.nick }}={
+    "name": "{{ usr.name }}",
+    "userPwd": "{{ usr.pass }}",
+    "description": "{{ usr.desc }}",
+    "groups": "{% for i in usr.groups %}{{ i.group }}{{ ',' if not loop.last else '' }}{% endfor %}"
+}
+{% endfor %}
+
+userNameArray=({% for usr in users %}{{ usr.nick }}{{ ',' if not loop.last else '' }}{% endfor %})

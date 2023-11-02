@@ -1,0 +1,61 @@
+
+role_directories:
+  - path: "{{ new_db_redo_log_loc }}"
+    state: directory
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"
+    mode: "0755"
+
+db_oradata_dir: "{{ oracle_home }}/oradata"
+db_init_file_location: "{{ oracle_home }}/dbs"
+db_sp_file_location: "{{ oracle_home }}/dbs"
+
+db_recovery_file_dest: "{{ oracle_software_location }}/fast_recovery_area"
+db_diagnostic_file_dest: "{{ oracle_software_location }}"
+db_audit_file_dest: "{{ db_oradata_dir }}/{{ db_sid }}/adump"
+db_ctrl_file1_loc: "{{ db_oradata_dir }}/{{ db_sid }}/"
+db_ctrl_file2_loc: "{{ db_recovery_file_dest }}/{{ db_sid }}/"
+db_restore_from_sid: WIAMMDEVX
+db_rman_backup_location: "{{ installers }}/dbexports/20180228/"
+
+new_db_redo_log_loc: "{{ oracle_home }}/data01/VODFOIMDE1/onlinelog"
+
+password_file_location: "{{ oracle_home }}/dbs"
+
+new_db_name:
+  in_file_path: "{{ db_sp_file_location }}/init{{ db_sid }}.ora"
+  from_regexp: db_name='WIAMMDEV'
+  to_regexp: db_name='ORCL'
+
+
+db_password_file:
+   name: orapwORCL
+   password : "{{ db_sys_password }}"
+   entries: 5
+
+
+db_new_name: ORCL
+
+## add exact paths here, if the paths are not changing, then remove this section and code will retain the original values.
+init_file_path_replace:
+  - from: /u01/app/oracle/product/11.2.0/orcl
+    to: "{{ oracle_software_location }}"
+  - from: /u02/oracle/admin/wiammdevx/adump
+    to: "{{ db_audit_file_dest }}"
+  - from: /u02/oracle/oradata/wiammdevx/
+    to: "{{ db_ctrl_file1_loc }}"
+  - from: /u02/oracle/fast_recovery_area/wiammdevx/
+    to: "{{ db_ctrl_file2_loc }}"
+  - from: /u02/oracle/oradata
+    to: "{{ db_oradata_dir }}"
+  - from: /u02/oracle/fast_recovery_area
+    to: "{{ db_recovery_file_dest }}"
+  - from: /u02//oracle/product
+    to: "{{ oracle_software_location }}"
+init_file_var_replace:
+  - from: "^WIAMMDEVX"
+    to: "{{ db_sid| upper }}"
+  - from: "db_unique_name='WIAMMDEVX'"
+    to: "db_unique_name='{{ db_sid| upper }}'"
+  - from: "SERVICE=WIAMMDEVXXDB"
+    to: "SERVICE={{ db_sid| upper }}"

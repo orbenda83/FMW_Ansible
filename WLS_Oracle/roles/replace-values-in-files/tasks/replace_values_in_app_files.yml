@@ -1,0 +1,14 @@
+- name: take the file out
+  shell: "{{ java_home }}/bin/jar -xf {{ item.app }} {{ item.file }}"
+  args:
+    chdir: "{{ working_directory }}"
+- name: update file
+  replace:
+    path: "{{ working_directory }}/{{ item.file }}"
+    regexp: "{{ item.from }}"
+    replace: "{{ item.to }}"
+
+- name: add the file back in the app.
+  shell: "{{ java_home }}/bin/jar -uf {{ item.app }} {{ item.file }}"
+  args:
+    chdir: "{{ working_directory }}"

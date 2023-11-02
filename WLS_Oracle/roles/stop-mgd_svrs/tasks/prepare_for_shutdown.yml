@@ -1,0 +1,8 @@
+---
+- name: template and copy wlst script file for starting servers.
+  template:
+    src: stop_servers.py.j2
+    dest: "{{ working_directory }}/stop_servers.py"
+    mode: 0755
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"

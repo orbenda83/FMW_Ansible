@@ -1,0 +1,19 @@
+---
+
+- name: install default packges required for the OS.
+  become: true
+  become_user: root
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ default_packages }}"
+  when: default_packages is defined
+
+- name: install additional packges required for the OS.
+  become: true
+  become_user: root
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ additional_packages }}"
+  when: additional_packages is defined

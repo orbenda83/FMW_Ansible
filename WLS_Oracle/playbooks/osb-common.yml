@@ -1,0 +1,11 @@
+---
+
+- hosts: osb
+  become: true
+  become_user: osbsrv
+  vars_files:
+    - ../vars/fusion.yml
+    - ../vars/bpm/common.yml
+  roles:
+    - role: common
+     

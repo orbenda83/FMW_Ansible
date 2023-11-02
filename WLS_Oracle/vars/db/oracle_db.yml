@@ -1,0 +1,56 @@
+dbs_to_shut_down:
+  - ORCL
+  - ORCL1
+shutdown_all_dbs: false
+
+java_version: 1.7.0_80
+oracle_home: "{{ oracle_software_location }}/oracle_home"
+
+oracle_database_binary_src: "{{ installers }}/DB/database"
+opatch_command: "{{ oracle_home }}/OPatch/opatch"
+db_base_version: 11.2.0.4.0
+db_backup_location: "{{ installers }}/dbexports/20180228"
+
+oracle_database_listener_name: wiamlistner
+oracle_database_listener_port: 1521
+
+additional_packages:
+  - oracle-rdbms-server-11gR2-preinstall
+
+user_limits:
+  - { limit: 'soft', type: nofile, value: '{{ oracle_limits_soft_no_file }}' }
+  - { limit: 'hard', type: nofile, value: '{{ oracle_limits_hard_no_file }}' }
+  - { limit: 'soft', type: nproc, value: '{{ oracle_limits_soft_nproc }}' }
+  - { limit: 'hard', type: nproc, value: '{{ oracle_limits_hard_nproc }}' }
+  - { limit: 'soft', type: stack, value: '{{ oracle_limits_soft_stack }}' }
+  - { limit: 'hard', type: stack, value: '{{ oracle_limits_hard_stack }}' }
+  - { limit: 'soft', type: memlock, value: '{{ oracle_limits_soft_memlock }}' }
+  - { limit: 'hard', type: memlock, value: '{{ oracle_limits_hard_memlock }}' }
+
+kernel_params_to_be_set:
+  kernel.shmmni: 4096
+  kernel.shmmax:  4398046511104
+  kernel.shmall: 1073741824
+  kernel.sem: 250 32000 100 128
+  fs.aio-max-nr:  1048576
+  fs.file-max: 6815744
+  net.ipv4.ip_local_port_range: 9000 65500
+  net.core.rmem_default: 262144
+  net.core.rmem_max: 4194304
+  net.core.wmem_default: 262144
+  net.core.wmem_max: 1048586
+
+#Oracle user limits
+oracle_limits_soft_no_file: 4096
+oracle_limits_hard_no_file: 65536
+oracle_limits_soft_nproc: 2047
+oracle_limits_hard_nproc: 16384
+oracle_limits_soft_stack: 10240
+oracle_limits_hard_stack: 32768
+oracle_limits_soft_memlock: 1887437
+oracle_limits_hard_memlock: 1887437
+
+
+oracle_database_edition: EE
+oracle_dba_group: "{{ oracle_install_group }}"
+oracle_oper_group: "{{ oracle_install_group }}"

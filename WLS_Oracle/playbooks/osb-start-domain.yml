@@ -1,0 +1,9 @@
+---
+- hosts: osb-admin
+  vars_files:
+    - ../vars/fusion.yml
+    - ../vars/bpm/common.yml
+    - ../vars/bpm/wls_domain.yml
+  roles:
+    - role: start-adminsvr
+    - role: start-mgd_svrs

@@ -1,0 +1,60 @@
+"""
+Useful utility functions.
+
+Copyright (C) 2006 Philip Aston, BEA Systems Ltd.
+"""
+
+
+import os, sys, traceback
+
+
+verbose = 0
+
+__all__ = []
+
+environment = {}
+
+def initialise(topLevelNamespace):
+    '''
+    Sadly there is no way to import the WLST create methods into a non
+    top-level module.
+
+    Instead the top level module must:
+
+        import wlst_utility
+        wlst_utility.initialise(globals())
+
+    Once this is done other modules can:
+        from wlst_utility import *
+
+    to access the exported WLST functions.
+    '''
+
+    for f in ("assign", "cd", "create", "ls", "readTemplate", "set", "writeDomain"):
+        globals()[f] = topLevelNamespace[f]
+        __all__.append(f)
+
+    for v in ("WL_HOME",):
+        try:
+            environment[v] = os.environ[v]
+        except KeyError:
+            print "Could not determine WEBLOGIC_HOME"
+
+
+
+
+def inform(message):
+    if verbose:
+        print "[%s]" % message
+
+def warn(message):
+    print "** WARNING: %s **" % message
+
+
+def warnException():
+    print "** WARNING"
+    traceback.print_exc()
+    print "**"
+
+
+

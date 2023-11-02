@@ -1,0 +1,8 @@
+---
+- include: validate_host.yml
+- include: configure_user_limits.yml
+- include: configure_kernal_params.yml
+- include: create_users_groups.yml
+- include: banner.yml
+- include: create_directories.yml
+- include: install_packages.yml

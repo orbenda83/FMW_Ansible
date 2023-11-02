@@ -1,0 +1,17 @@
+
+- include: prepare_for_copy_to_mgd_svr_on_hosts.yml
+- block:
+  - name: Copy archived files and extract
+    shell: "tar -xvf {{ item[0].source }} {{ item[0].to_folder }}"
+    args:
+         chdir: "{{ item[0].destination }}/{{ item[1].name }}"
+
+
+  # tar will either preserve the attributes, or use te one of the oracle_user
+  # but we need to assign t a specific user.
+  - name: Change the ownership of the files, to the owner specified
+    shell: "chown -R {{ owner }}:{{ group }} {{ item[0].destination }}/{{ item[1].name }}/{{ item[0].to_folder }}/"
+
+  - name: Change the mode of the files, to the one specified
+    shell: "chmod -R {{ mode }} {{ item[0].destination }}/{{ item[1].name }}/{{ item[0].to_folder }}/"
+  when: item[0].cluster == item[1].cluster and item[1].listen_address == ansible_hostname

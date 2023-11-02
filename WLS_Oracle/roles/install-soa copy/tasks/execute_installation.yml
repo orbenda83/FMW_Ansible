@@ -1,0 +1,42 @@
+---
+
+- name: create soa silient response file
+  template:
+    src: templates/soa_silent_response.rsp.j2
+    dest: "{{ soa_silent_file }}"
+    mode: 0755
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"
+
+
+# - name: Execute the silent SOA install"
+#   become: true
+#   become_user: "{{ oracle_user }}"
+#   shell: "{{ soa_binary_src }}/Disk1/runInstaller -silent -invPtrLoc {{ invptr_location }} -response {{ soa_silent_file }} -jreLoc {{ java_home }} -debug -waitforcompletion"
+#   args:
+#     creates: "{{ soa_home }}"
+
+- name: Execute the silent SOA install
+  command: "{{ java_home}}/bin/java -Xms1024m -Xmx1024m -jar {{ soa_installer }} -ignorePrereq -invPtrLoc {{ invptr_location }} -silent -responseFile {{ working_directory }}/silent.xml"
+  become_user: "{{ oracle_user }}"
+  args:
+    creates: "{{ soa_home }}"
+  register: command_result
+
+- name: Validate the create output to see all went well.
+  assert:
+    that:
+      - command_result.stdout | search("The installation of Oracle Fusion Middleware.*completed successfully")
+    msg: "The installation of Oracle Fusion Middleware failed. Please check the logs."
+  when: command_result.changed
+
+- name: find SOA version
+  command: '{{ soa_opatch_command_dir }}/opatch lsinventory'
+  register: soa_version_check
+  become_user: "{{ oracle_user }}"
+
+- name: Validate the version of SOA.
+  assert:
+    that:
+       - soa_version_check.stdout | search("Oracle SOA Suite.*{{ soa_base_version }}")
+    msg: "Required  SOA version {{ soa_base_version }} is not installed, failing.."

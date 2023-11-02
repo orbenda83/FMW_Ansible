@@ -1,0 +1,5 @@
+nmConnect('{{ wls_admin_user }}','{{ wls_admin_pass }}','{{ admin_listen_address }}','5556','{{ wls_domain_name }}','{{ wls_domain_home }}','SSL')
+
+nmStart('{{ admin_server_name }}')
+
+exit()

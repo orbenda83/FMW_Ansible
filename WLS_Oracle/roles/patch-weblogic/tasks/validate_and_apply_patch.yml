@@ -1,0 +1,31 @@
+---
+
+- name: Get a report of patches installed.
+  command: "{{ wls_bsu_command_dir }}/bsu.sh -report -patch_id_mask={{ item.id }}"
+  args:
+    chdir: "{{ wls_bsu_command_dir }}"
+  register: bsu_ouput
+
+
+- name: set flag for the existence of patch.
+  set_fact:
+       patch_exists: "{{ 'yes' if bsu_ouput.stdout | search('Patch ID.*' + item.id) else 'no' }}"
+
+- block:
+  - name: Copy and extract patchset Binaries
+    unarchive:
+      src: '{{ installers }}/patches/wls/10.3.6/{{ item.file }}'
+      dest: '{{ wls_patch_download_loc }}'
+      remote_src: yes
+      owner: '{{ oracle_user }}'
+      group: '{{ oracle_install_group }}'
+      mode: 0744
+      creates: "{{ wls_patch_download_loc }}/{{ item.id }}.jar"
+
+  - name: Apply the patch now.
+    command: "{{ wls_bsu_command_dir }}/bsu.sh -install -patchlist={{ item.id }} -prod_dir={{ wls_home }} -verbose"
+    args:
+      chdir: "{{ wls_bsu_command_dir }}"
+    register: command_result
+    failed_when: "'Result: Success' not in command_result.stdout"
+  when: not patch_exists

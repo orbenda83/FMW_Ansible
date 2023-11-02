@@ -1,0 +1,55 @@
+---
+- name: Set admin NM scripts
+  become_user: root
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ wls_domain_home}}/bin/{{ item.dest }}"
+    owner: "{{ oracle_user }}"
+    mode: 0755
+  become: True
+  with_items:
+    - { "src": "nmStartAdmin.sh", "dest": "nmStartAdmin.sh" }
+    - { "src": "nmStartAdmin.py.j2", "dest": "nmStartAdmin.py" }
+
+- name: Ensure an admin server runs with crontab
+  become_user: root
+  cron:
+    name: "Start AdminServer"
+    minute: "*/10"
+    user: "{{ oracle_user }}"
+    job: "{{ wls_domain_home }}/bin/nmStartAdmin.sh"
+    
+- name: Ensure an admin server runs with crontab
+  become_user: root
+  cron:
+    name: "Start AdminServer on reboot"
+    special_time: reboot
+    user: "{{ oracle_user }}"
+    job: "{{ wls_domain_home }}/bin/nmStartAdmin.sh"
+
+- debug:
+    msg: "Admin Port: {{ admin_port }}"
+
+- name: Check if admin is running.
+  wait_for:
+    port: "{{ admin_port }}"
+    delay: 1
+    host: "{{ admin_listen_address }}"
+    timeout: 2
+    msg: "Timeout waiting for admin to respond"
+  register: port_check
+  ignore_errors: yes
+
+- block:
+  - name: start weblogic admin as a background process.
+    shell: "{{ wls_domain_home }}/bin/nmStartAdmin.sh"
+    become_user: "{{ oracle_user }}"
+
+  - name: wait until admin server has started
+    wait_for:
+      port: "{{ admin_port }}"
+      delay: 20
+      host: "{{ admin_listen_address }}"
+      timeout: "{{ time_to_wait_for_admin_svr_start }}"
+  when: port_check.failed == true
+  delegate_to: "{{ admin_listen_address }}"

@@ -1,0 +1,16 @@
+# copy the create Inventory Pointer script
+
+- template:
+    src: templates/create_central_inventory.sh.j2
+    dest: "{{ working_directory }}/create_central_inventory.sh"
+    mode: 0755
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"
+
+
+
+# run the create Inventory Pointer script as root user
+
+- name: execute "{{ ora_inventory }}/create_central_inventory.sh"
+  become: true
+  shell: "{{ working_directory }}/create_central_inventory.sh"

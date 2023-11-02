@@ -1,0 +1,16 @@
+---
+
+- hosts: bpm
+  roles:
+     - role: common
+     - role: install-java
+     - role: install-weblogic
+     - role: patch-weblogic
+#     - role: install-osb
+#     - role: ansible-role-patch-osb
+#     - role: ansible-role-install-odi
+#     - role: ansible-role-patch-odi
+     - role: install-soa
+     - role: patch-soa
+     - role: unpack-domain
+     - role: configure-domain

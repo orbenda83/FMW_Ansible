@@ -1,0 +1,9 @@
+- name: validate OS type and version
+  assert:
+     that:
+#       - ansible_distribution == target_operating_system and   ansible_distribution_version == target_operating_system_version
+       - ansible_distribution == target_operating_system and   ansible_distribution_version is version(target_operating_system_version, '=')
+     msg: >
+        "os checks failed, expected {{ target_operating_system }} version {{ target_operating_system_version }}"
+         "but got {{ansible_distribution}}  {{ ansible_distribution_version }}"
+  when: target_operating_system is defined and ansible_distribution_version is defined

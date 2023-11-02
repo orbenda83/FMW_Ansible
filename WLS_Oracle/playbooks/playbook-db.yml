@@ -1,0 +1,16 @@
+---
+
+- hosts: oracle_db
+  vars_files:
+    - vars/db/oracle_db.yml
+    #- vars/db/oracle_db_rman_restore.yml
+  vars:
+    - version: 12
+
+  roles:
+    - common
+    - install-oracle-db
+    #- role: ansible-role-install-db-{{ release }}
+    #- role: ansible-role-shutdown-db
+    #- role: ansible-role-db-rman-import
+    #- role: ansible-role-reconfigure-listner

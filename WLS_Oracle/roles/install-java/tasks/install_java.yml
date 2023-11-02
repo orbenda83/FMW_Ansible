@@ -1,0 +1,30 @@
+---
+
+# - name: "install java"
+#   yum:
+#     name: "{{ jdk_installer }}"
+#     state: present
+#     creates: "{{ java_home }}/bin"
+
+# - name: "install java"
+#   unarchive:
+#     src: "{{ jdk_installer }}"
+#     dest: "{{ java_install_location }}"
+#     remote_src: no
+#     creates: "{{ java_home }}/bin"
+#   become_user: "{{ oracle_user }}"
+
+- name: "copy java installer"
+  copy:
+    src: "/oracle/OSB_BPM_12214/{{ java_version_package }}"
+    dest: "/tmp/{{ java_version_package }}"
+    owner: root
+    group: root
+  become_user: root
+  
+- name: "install java"
+  command: "rpm -ivh /tmp/{{ java_version_package }}" 
+  args: 
+    creates: "{{ java_home }}" 
+#    /usr/java/jdk1.8.0_261-amd64
+  become_user: root

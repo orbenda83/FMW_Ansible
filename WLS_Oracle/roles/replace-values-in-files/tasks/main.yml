@@ -1,0 +1,4 @@
+---
+
+- include: replace_values_in_file.yml
+- include: update_apps.yml

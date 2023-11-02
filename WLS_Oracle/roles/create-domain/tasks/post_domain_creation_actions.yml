@@ -1,0 +1,14 @@
+
+- block:
+  - name: backup setDomainEnv file.
+    copy:
+      src: "{{ wl_domain_home }}/bin/setDomainEnv.sh"
+      dest: "{{ wl_domain_home }}/bin/setDomainEnv.sh_backup"
+      remote_src: yes
+
+  - name: copy shl to setDomainEnv file.
+    copy:
+      src: "{{ wl_domain_home }}/bin/setDomainEnv.shl"
+      dest: "{{ wl_domain_home }}/bin/setDomainEnv.sh"
+      remote_src: yes
+  when: domain_info.restore_setdomain_env is defined and domain_info.restore_setdomain_env

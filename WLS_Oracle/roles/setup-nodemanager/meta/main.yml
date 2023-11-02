@@ -1,0 +1,6 @@
+galaxy_info:
+  author: Johncy Joseph
+  description: WLS Admin role
+  license: none
+  min_ansible_version: 1.3
+  galaxy_tags: []

@@ -1,0 +1,2 @@
+---
+- include: configure_nodemanager_service.yml

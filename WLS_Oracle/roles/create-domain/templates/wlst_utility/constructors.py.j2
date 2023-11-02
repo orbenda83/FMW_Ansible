@@ -1,0 +1,78 @@
+'''
+Utility constructors for common MBean types.
+
+See http://dev2dev.bea.com/pub/a/2005/01/wlst_offline.html.
+
+Copyright (C) 2006 Philip Aston, BEA Systems Ltd.
+'''
+
+import wlst_utility
+
+__all__ = []
+
+
+for mbeanType in (
+    "Cluster", "ConnectionFactory", "DestinationKey", "Domain",
+    "JDBCDataSource", "JDBCConnectionPoolParams", "JDBCDataSourceParams",
+    "JDBCDriverParams", "JDBCMultipoolParams", "JDBCStore", "JDBCSystemResource",
+    "JMSServer", "JMSSystemResource", "JMSTemplate", "JTA", "Log",
+    "Machine", "MailSession", "NetworkAccessPoint", "NodeManager",
+    "Properties", "Property", "Queue", "SAFAgent", "SAFImportedDestinations",
+    "SAFLoginContext", "SAFQueue", "SAFRemoteContext", "SecurityConfiguration",
+    "Server", "StartupClass", "ShutdownClass", "SubDeployment", "SSL", "Template",
+    "TransactionParams", "Topic", "UniformDistributedQueue",
+    "UniformDistributedTopic", "UnixMachine", "WebServer", "WebServerLog", "WorkManager","WorkManagerShutdownTrigger",
+    "ForeignJNDIProvider", "FileStore", "ConnectionFactoryParams", "ForeignJNDILink", "ForeignServer",
+    "ForeignDestination", "ForeignConnectionFactory", "DefaultDeliveryParams", "LoadBalancingParams", 
+    "TransactionParams", "JDBCXAParams", "DeployApplication", "DeliveryParamsOverrides", "DeliveryFailureParams",
+    "JDBCStore", "DefaultFileStore", "MaxThreadsConstraint", "WTCServer", "WTCLocalTuxDom", "WTCRemoteTuxDom", 
+    "WTCImport","WTCExport","WTCPassword","WTCtBridgeGlobal","WTCtBridgeRedirect","ClientParams","DestinationKey",
+    "OverloadProtection", "ServerFailureTrigger",
+    ):
+
+
+    def mbeanFactory(name, _type=mbeanType, existingMBean = None, **kwds):
+        logMBeanCreation(name, _type, kwds)
+
+        if existingMBean:
+            mbean = existingMBean
+            existingMBean.name = name
+        else:
+            mbean = wlst_utility.create(name, _type)
+
+        for key, value in kwds.items(): setattr(mbean, key, value)
+        return mbean
+
+    globals()[mbeanType] = mbeanFactory
+    __all__.append(mbeanType)
+
+_ServerMBeanFactory = Server
+def Server(name, existingMBean = None, **kwds):
+    """The validation for Server mbeans is over zealous. If the
+    listenAddress is the same as that of an existing server who's
+    listenPort is 7001, it will barf if the listenAddress is set
+    before the (presumably unique) listenPort. A similar problem
+    occurs for matching listen ports. We make sure the
+    (listenAddress,listenPort) is unique for creation, then fix up
+    afterwards.
+    """
+    listenAddress = kwds.get("listenAddress", "localhost")
+    kwds["listenAddress"] = "workingaroundoverzealousmbeanvalidation"
+    server = _ServerMBeanFactory(name, existingMBean = existingMBean, **kwds)
+    server.listenAddress = listenAddress
+    return server
+
+
+def logMBeanCreation(name, type, options):
+
+    if wlst_utility.verbose == 1:
+        print '%s("%s")' % (type, name)
+
+    elif wlst_utility.verbose > 1:
+        s = '%s(name="%s"' % (type, name)
+        for key, value in options.items():
+            try: v = value.name
+            except AttributeError: v = '"%s"' % (value,)
+            s += '\n\t%s=%s' % (key, v)
+        print s + ')'
+

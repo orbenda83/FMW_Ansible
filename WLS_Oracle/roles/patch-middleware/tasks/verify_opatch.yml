@@ -1,0 +1,37 @@
+---
+
+- name: retrieve opatch version
+  become_user: "{{ oracle_user }}"
+  command: "{{ osb_opatch_command_dir }}/opatch version | grep 'OPatch Version' | awk -F ': ' '{ print $2 }'"
+  register: opatch_out
+  
+- name: Copy and extract OPatch patchset Binaries
+  become_user: "{{ oracle_user }}"
+  unarchive:
+    src: '{{ opatch_patch }}'
+    dest: '{{ patch_staging_directory }}'
+    remote_src: no
+    owner: '{{ oracle_user }}'
+    group: '{{ oracle_install_group }}'
+    mode: 0744
+    creates: "{{ patch_staging_directory }}/{{ opatch_patch_id }}"
+    
+- name: Patch ID to install
+  debug: msg="OPatch Version is :{{ opatch_out }}." 
+    
+- name: Verify /tmp is accessible
+  become_user: root
+  file:
+    path: /tmp
+    state: directory
+    mode: '0777'
+    
+- name: Versions retrieved
+  debug: msg="opatch_out => {{ opatch_out }} || opatch_version => {{ opatch_version }}"
+
+- name: Run Opatch upgrade
+  become_user: "{{ oracle_user }}"
+  command: "java -jar {{ patch_staging_directory }}/{{ opatch_patch_id }}/opatch_generic.jar -silent oracle_home={{ middleware_home }}"
+  # args:
+  #   skip_failed: true
+  when: "opatch_version not in opatch_out.stdout" 

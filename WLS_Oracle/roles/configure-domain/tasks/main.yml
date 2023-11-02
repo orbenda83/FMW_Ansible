@@ -1,0 +1,6 @@
+---
+
+
+- include: prepare_for_wl_domain_configuration.yml
+# - include: start_admin_server.yml
+- include: configure_wl_domain.yml

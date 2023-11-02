@@ -1,0 +1,14 @@
+---
+
+- name: Execute configure soa domain script
+  shell: "{{ product_wlst_command }} {{ working_directory }}/configure-soa-infra.py"
+  become_user: '{{ oracle_user }}'
+  register: command_result
+
+
+- name: Validate the create output to see all went well.
+  assert:
+        that:
+           - command_result.stdout | search("successfully configured soa infra")
+        msg: "Onfiguring the soa infra failed, check the logs.."
+  when: command_result.changed

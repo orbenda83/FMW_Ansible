@@ -1,0 +1,138 @@
+shared_mount: /opt/
+app_mount: /opt/
+release_number: 1.0
+installers: /oracle/OSB_BPM_12214
+repository: /oracle
+
+
+
+oracle_software_location: "{{ app_mount }}oracle"
+middleware_home: "{{ oracle_software_location }}/middleware"
+soa_home: "{{ middleware_home }}/soa"
+osb_home: "{{ middleware_home }}/osb"
+inventory_location: "{{ oracle_user_home }}/oraInventory"
+invptr_location: "/etc/oraInst.loc"
+app_share_folder: "{{ shared_mount }}files"
+oracle_common_home: "{{ middleware_home }}/oracle_common"
+# duplicated inventory_location
+ora_inventory: "{{ oracle_software_location }}/oraInventory"
+oracle_user_home: "/home/{{ oracle_user }}"
+working_directory: "{{ oracle_user_home }}/build"
+patch_staging_directory: "{{ working_directory }}/patches"
+install_staging_directory: "{{ working_directory }}/install"
+
+
+wl_domain_base: "{{middleware_home}}/user_projects/domains"
+#directory to which unpack will copy apps like OEM
+app_dir: "{{middleware_home}}/user_projects/applications"
+appshare_dir: "{{ oracle_software_location }}/appshare" # need to update to new share location /u03
+
+wl_jms_filestore_dir: "{{ shared_mount }}data/jms"
+wl_tlog_store_dir: "{{ shared_mount }}data/tlog"
+
+java_install_location: "/usr/java"
+# java_install_location: "{{ app_mount }}/jdk"
+java_build: "{{ java_version.split('.')[1] }}"
+java_update: "{{ java_version.split('_')[1] }}"
+
+jdk_installer: "{{ installers }}/jdk-{{ java_build }}u{{ java_update }}-linux-x64.tar.gz"
+
+java_home: "{{ java_install_location }}/{{ java_version }}/"
+
+
+wls_mgd_server_dir_root: "{{ app_mount }}data/domains/"
+
+wls_nm_listen_port: 3056
+
+# target_operating_system: OracleLinux
+# target_operating_system_version: 7.6
+target_operating_system: RedHat
+target_operating_system_version: 7.8
+
+bip_lb: https://vfwiamobiref.opc.oracleoutsourcing.com
+oim_lb: https://vfwiamoimconf.opc.oracleoutsourcing.com
+oim_lb_address: oim_lb_otd
+osb_lb_address: osb_lb_otd
+
+
+db_server: <DB_HOST>
+db_port: 1521
+db_sid: ORCL
+db_service: ORCL
+db_schema_common_password: <SCHEMA_COMMON_PASSWORD>
+db_sys_password: <SYS_PASSWORD>
+
+
+additional_user_groups:
+  - "{{ oracle_install_group }}"
+additional_users:
+  - name: "{{ oracle_user }}"
+    guid: 2000
+    groups:
+      - oinstall
+      - wheel
+    comment: "Oracle stack user"
+
+oracle_user: oracle
+oracle_install_group: oinstall
+
+
+default_file_mode: "0755"
+
+# standard packages needed for linux.
+default_packages:
+  - libselinux-python
+  - curl
+  - unzip
+  - nfs-utils
+  - acl
+  - dos2unix
+  - telnet
+
+
+# silent install common vars
+specify_download_location: false
+skip_software_updates: true
+is_valid_middleware_home: true
+appserver_type: WLS
+
+
+time_to_wait_for_admin_svr_start: 120
+soa_infra_start_wait_in_minutes: 10
+
+
+
+default_directories:
+  - path: "{{ oracle_software_location }}"
+    state: directory
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"
+    mode: "0755"
+  - path: "{{ install_staging_directory }}"
+    state: directory
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"
+    mode: "0755"
+
+  - path: "{{ oracle_software_location }}/oraInventory"
+    state: directory
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"
+    mode: "0755"
+
+  - path: "{{ working_directory }}"
+    state: directory
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"
+    mode: "0755"
+
+  - path: "{{ patch_staging_directory }}"
+    state: directory
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"
+    mode: "0755"
+#  - path: "{{ java_home }}"
+#    state: directory
+#    owner: "{{ oracle_user }}"
+#    group: "{{ oracle_install_group }}"
+#    mode: "0755"

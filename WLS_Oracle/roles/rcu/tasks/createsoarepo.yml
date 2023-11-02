@@ -1,0 +1,23 @@
+---
+- name: Copy script that creates the  schemas in database repository
+  become_user: root
+  template: 
+    src: rcu_create.sh 
+    dest: "{{ working_directory }}/"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"
+    mode: 0755
+
+- name: Copy passwords file
+  become_user: root
+  template: 
+    src: "rcu_password.txt" 
+    dest: "{{ working_directory }}/"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"
+
+- name: Execute script for generate schemas on database
+  become_user: "{{ oracle_user }}"
+  shell: '{{ working_directory }}/rcu_create.sh {{ product }}'
+  register: command_result
+  failed_when: "('Repository Creation Utility - Create : Operation Completed' not in command_result.stdout_lines) and ('CAUSE - RCU-6016 The specified prefix already exists.' not in command_result.stdout_lines)"

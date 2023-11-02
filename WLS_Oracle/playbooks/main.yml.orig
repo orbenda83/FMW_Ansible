@@ -1,0 +1,22 @@
+---
+
+- name: Configure common db params and directories
+  include: db-common.yml
+     
+- name: Configure common bpm params and directories
+  include: bpm-common.yml
+     
+- name: Install Oracle db
+  include: install-db.yml
+  
+- name: Install BPM software
+  include: bpm-software.yml
+     
+- name: Configure BPM domain on Admin
+  include: bpm-configure-admin.yml
+
+- name: Configure BPM domain setup managed servers
+  include: bpm-configure-managed.yml
+
+- name: Start BPM domain
+  include: bpm-start-domain.yml

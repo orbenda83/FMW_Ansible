@@ -1,0 +1,43 @@
+
+
+- name: Copy and extract archived files for all servers.
+  include: copy_archives.yml
+  with_items: "{{ common_archives_to_copy }}"
+  when: common_archives_to_copy is defined
+
+- name: Copy simple files for all servers.
+  include: copy_files.yml
+  with_items: "{{ common_files_to_copy }}"
+  when: common_files_to_copy is defined
+
+- name: Copy and extract archived files for managed server.
+  include: copy_archives.yml
+  with_items: "{{ mgd_svr_archives_to_copy }}"
+  when: mgd_svr_archives_to_copy is defined
+
+- name: Copy and extract archived files for managed server into managed server folders.
+  include: copy_archives_to_mgd_server_folder.yml
+  with_nested:
+    -  "{{ mgd_svr_archives_to_copy_to_server_folder }}"
+    - "{{ domain_info.managed_servers }}"
+  when: mgd_svr_archives_to_copy_to_server_folder is defined
+
+- name: Copy and extract archived files for admin server.
+  include: copy_archives.yml
+  with_items: "{{ admin_svr_archives_to_copy }}"
+  when: admin_svr_archives_to_copy is defined
+
+- name: Copy simple files for admin server.
+  include: copy_files.yml
+  with_items: "{{ admin_svr_files_to_copy }}"
+  when: admin_svr_files_to_copy is defined
+
+- name: Copy folders for all servers.
+  include: copy_folders.yml
+  with_items: "{{ mgd_server_folders_to_copy }}"
+  when: mgd_server_folders_to_copy is defined
+
+- name: Copy simple files for managed server.
+  include: copy_files.yml
+  with_items: "{{ mgd_svr_files_to_copy }}"
+  when: mgd_svr_files_to_copy is defined

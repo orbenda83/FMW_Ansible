@@ -1,0 +1,33 @@
+---
+
+- name: Template the silent response file.
+  template:
+    src: templates/silent.xml.j2
+    dest: "{{ working_directory }}/silent.xml"
+    mode: 0755
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"
+
+- name: install weblogic if not present already.
+  command: "{{ java_home}}/bin/java -Xms1024m -Xmx1024m -jar {{ wls_installer }} -mode=silent -silent_xml={{ working_directory }}/silent.xml -log={{ working_directory }}/platform_install.log"
+  become_user: "{{ oracle_user }}"
+  args:
+    creates: "{{ wl_server_home }}"
+
+- name: check WebLogic installed correctly
+  command: tail -n 1 "{{ working_directory }}/platform_install.log"
+  register: install_log_lastline
+
+- name: check if install log ends with "success"
+  fail:
+    msg: "WebLogic didn't install correctly, Please check install logs at {{ oracle_user_home }}/platform_install.log"
+  when: '"The installation was successfull!" not in install_log_lastline.stdout'
+
+- name: validate weblogic version
+  command: "{{ java_home }}/bin/java -cp {{ wls_jar }} weblogic.version"
+  register: wls_version_check
+
+- assert:
+    that:
+    - wls_version in wls_version_check.stdout
+    msg: "Required  Weblogic version {{ wls_version }} is not installed, failing.."

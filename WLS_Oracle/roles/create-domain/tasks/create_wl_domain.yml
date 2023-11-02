@@ -1,0 +1,45 @@
+---
+
+- name: Execute create domain script
+  shell: "{{ wlst_command }} {{ working_directory }}/create_wl_domain.py"
+  become_user: '{{ oracle_user }}'
+  register: command_result
+  args:
+    creates: "{{ wl_domain_home }}"
+
+- name: Validate the create output to see all went well.
+  assert:
+        that:
+           - command_result.stdout | search("successfully created domain")
+        msg: "Creating the domain from the supplied template failed, check the logs.."
+  when: command_result.changed
+
+- name: create directory for boot.properties.
+  file:
+    path: "{{ admin_server_dir }}/security/"
+    state: "directory"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"
+    mode: "0755"
+
+
+- name: create boot.properties file
+  template:
+    src: boot.properties.j2
+    dest: "{{ admin_server_dir }}/security//boot.properties"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"
+    mode: "0755"
+- name: create directory for logs.
+  file:
+    path: "{{ admin_server_dir }}/logs/"
+    state: "directory"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"
+    mode: "0755"
+
+- name: modify the start up script for nohupping.
+  replace:
+     path: "{{ wl_domain_home }}/startWebLogic.sh"
+     regexp: '^\$\{DOMAIN_HOME\}/bin/startWebLogic\.sh \$\*'
+     replace: "nohup ${DOMAIN_HOME}/bin/startWebLogic.sh $* > {{ admin_server_dir }}/logs/{{ domain_info.admin.server.name }}.out 2>&1 &"

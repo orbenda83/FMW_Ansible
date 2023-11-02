@@ -1,0 +1,17 @@
+---
+
+- name: comment out urandom ready for replacement generator
+  become: true
+  become_user: root
+  lineinfile:
+    path: "{{java_home}}/jre/lib/security/java.security"
+    regexp: '^securerandom.source=file:/dev/urandom'
+    line: '#securerandom.source=file:/dev/urandom'
+
+- name: set random generator for java
+  become: true
+  become_user: root
+  lineinfile:
+    path: "{{java_home}}/jre/lib/security/java.security"
+    insertbefore: '^#securerandom.source=file:/dev/urandom'
+    line: 'securerandom.source=file:/dev/./urandom'

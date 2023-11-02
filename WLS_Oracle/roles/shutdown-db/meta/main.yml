@@ -1,0 +1,7 @@
+galaxy_info:
+  author: Johncy Joseph
+  description: RMAN role to import a backup.
+  license: none
+  min_ansible_version: 1.3
+  galaxy_tags: []
+dependencies:

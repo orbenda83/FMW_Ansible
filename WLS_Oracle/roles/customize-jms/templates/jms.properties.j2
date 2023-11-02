@@ -1,0 +1,70 @@
+wls_user="{{ wls_admin_user }}"
+wls_pass="{{ wls_admin_pass }}"
+wls_admin="t3://{{ admin_server_address }}:{{ admin_server_port }}"
+
+############ file stores ############
+{% for file_store in file_stores %}
+{% for osb_server in osb_servers %}
+{{ file_store.name }}{{ osb_server.index }}={
+    "name": "{{ file_store.name }}{{ osb_server.index }}",
+    "dir": "{{ file_store.name }}{{ osb_server.index }}",
+    "target": "{{ osb_server.name }}"
+}
+
+{% endfor %}
+{% endfor %}
+
+fileStoresArray=({% for file_store in file_stores %}{% for osb_server in osb_servers %}{{ file_store.name }}{{ osb_server.index }},{% endfor %}{% endfor %})
+
+############ JMS servers ############
+{% for jms_server in jms_servers %}
+{% for osb_server in osb_servers %}
+{{ jms_server.name }}{{ osb_server.index }}={
+    "name": "{{ jms_server.name }}{{ osb_server.index }}",
+    "persiststore": "{% if jms_server.persiststore != "" %}{{ jms_server.persiststore }}{{ osb_server.index }}{% endif %}",
+    "target": "{{ osb_server.name }}"
+}
+
+{% endfor %}
+{% endfor %}
+
+jmsServersArray=({% for jms_server in jms_servers %}{% for osb_server in osb_servers %}{{ jms_server.name }}{{ osb_server.index }},{% endfor %}{% endfor %})
+
+############ JMS modules ############
+{% for jms_module in jms_modules %}
+{{ jms_module.name }}={
+    "name": "{{ jms_module.name }}",
+    "targets": [{% for target in jms_module.targets %}{
+        "name": "{{ target.name }}",
+        "type": "{{ target.type }}"
+    }{{ ',' if not loop.last else '' }}{% endfor %}],
+    "subdeployments": [{% for subdeployment in jms_module.subdeployments %}{% for osb_server in osb_servers %}{
+        "name": "{{ subdeployment.name }}{{ osb_server.index }}",
+        "target": "{{ subdeployment.target }}{{ osb_server.index }}"
+    }{{ ',' if not loop.last else '' }}{% endfor %}{% endfor %}],
+    "cfs": [{% for cf in jms_module.cfs %}{
+        "name": "{{ cf.name }}",
+        "xa": "{{ cf.xa }}"
+    }{{ ',' if not loop.last else '' }}{% endfor %}],
+    "queues": [{% for queue in jms_module.queues %}{% if queue.type == "queue" %}{% for osb_server in osb_servers %}{
+        "name": "{{ queue.name }}{{ osb_server.index }}",
+        "subdeployment": "{{ queue.subdeployment }}{{ osb_server.index }}",
+        "type": "{{ queue.type }}",
+        "target": "{{ queue.target }}{{ osb_server.index }}",
+        "errorqueue": "{% if queue.errorqueue != "" %}{{ queue.errorqueue }}{{ osb_server.index }}{% endif %}",
+        "subQueues": []
+    }{{ ',' if not loop.last else '' }}{% endfor %}{{ ',' if not loop.last else '' }}{% else %}{
+        "name": "{{ queue.name }}",
+        "subdeployment": "",
+        "type": "{{ queue.type }}",
+        "target": "",
+        "errorqueue": "",
+        "subQueues": [
+            {% for subQueue in queue.subQueues %}{% for osb_server in osb_servers %}{"name": "{{ subQueue.name }}{{ osb_server.index }}" }{{ ',' if not loop.last else '' }}{% endfor %}{% endfor %}
+        ]
+    }{{ ',' if not loop.last else '' }}{% endif %}{% endfor %}],
+}
+{% endfor %}
+
+jmsModulesArray=({% for jms_module in jms_modules %}{% for osb_server in osb_servers %}{{ jms_module.name }},{% endfor %}{% endfor %})
+

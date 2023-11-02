@@ -1,0 +1,32 @@
+# ************ Server Configuration ************
+# [db-dev]
+# testlindb
+
+[osb-admin-dev]
+DEVSOAADMIN ansible_host=dev-admin-ip
+
+[osb-managed-dev]
+DEVSOANODE01 ansible_host=dev-osb-ip-1
+
+# ************ Functionality Grouping ************
+# [db:children]
+# db-dev
+# db-int
+# db-accept
+# db-prod
+
+[osb-admin:children]
+osb-admin-dev
+
+[osb-managed:children]
+osb-managed-dev
+
+[osb:children]
+osb-admin
+osb-managed
+
+# ************ Environment Grouping ************
+[dev:children]
+# db-dev
+osb-admin-dev
+osb-managed-dev

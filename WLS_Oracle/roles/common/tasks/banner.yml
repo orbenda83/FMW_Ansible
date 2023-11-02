@@ -1,0 +1,32 @@
+---
+
+- name: create the banner directory
+  become_user: root
+  file:
+    path: /etc/boj
+    state: directory
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"
+    mode: 755
+
+- name: publish banner to directory
+  become_user: root
+  template:
+    src: boj-banner.j2
+    dest: /etc/boj/boj-banner
+    mode: 444
+
+- name: comment old banner to sshd_config
+  become_user: root
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regex: 'Banner /etc/issue.net'
+    line: '#Banner /etc/issue.net'
+
+- name: add banner to sshd_config
+  become_user: root
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    insertafter: '#Banner none'
+    line: 'Banner /etc/boj/boj-banner'
+  notify: restart-sshd

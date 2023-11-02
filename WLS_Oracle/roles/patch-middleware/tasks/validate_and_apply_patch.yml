@@ -1,0 +1,76 @@
+---
+
+- name: Copy and extract patchset Binaries
+  become_user: root
+  unarchive:
+    src: '{{ item.file }}'
+    dest: '{{ patch_staging_directory }}'
+    remote_src: no
+    owner: '{{ oracle_user }}'
+    group: '{{ oracle_install_group }}'
+    mode: 0744
+    creates: "{{ patch_staging_directory }}/{{ item.id }}"
+
+- name: Verify /tmp is accessible
+  become_user: root
+  file:
+    path: /tmp
+    state: directory
+    mode: '0777'
+
+# oracle common patches
+- block:
+  - name: Get a report of patches installed.
+    become_user: "{{ oracle_user }}"
+    command: "{{ opatch_command_dir }}/opatch lspatches"
+    environment:
+      ORACLE_HOME: "{{ middleware_home }}"
+    become_user: "{{ oracle_user }}"
+    register: opatch_ouput
+
+  - name: Patch ID to install
+    debug: msg="Patch id to install is :{{ item.id }}."  
+
+  - name: set flag for the existence of patch.
+    set_fact:
+      ou_patch_exists: "{{ 'yes' if item.id in opatch_ouput.stdout else 'no' }}"
+
+  - name: Apply the patch now to oracle_common
+    become_user: "{{ oracle_user }}"
+    shell: "{{ opatch_command_dir }}/opatch apply -silent -jre {{ java_home }}/jre"
+    environment:
+      ORACLE_HOME: "{{ middleware_home }}"
+      OPATCH_NO_FUSER: true
+    args:
+      chdir: "{{ patch_staging_directory }}/{{ item.id }}"
+    register: command_result
+    failed_when: "'OPatch succeeded' not in command_result.stdout"
+    when:
+      - item.apply_to_oracle_common_home
+      - not ou_patch_exists
+
+# oracle patches
+#- block:
+#  - name: Get a report of patches installed.
+#    command: "{{ opatch_command_dir }}/opatch lspatches"
+#    environment:
+#      ORACLE_HOME: "{{ product_home }}"
+#    become_user: "{{ oracle_user }}"
+#    register: opatch_ouput
+
+#  - name: set flag for the existence of patch.
+#    set_fact:
+#      product_patch_exists: "{{ 'yes' if item.id in opatch_ouput.stdout_lines else 'no' }}"
+
+#  - name: Apply the patch now to product_home
+#    shell: "{{ opatch_command_dir }}/opatch apply -silent -jre {{ java_home }}/jre"
+#    environment:
+#      ORACLE_HOME: "{{ product_home }}"
+#    args:
+#      chdir: "{{ patch_staging_directory }}/{{ item.id }}"
+#    become_user: '{{ oracle_user }}'
+#    register: command_result
+#    failed_when: "'OPatch succeeded' not in command_result.stdout"
+#    when:
+#      - item.apply_to_product_home
+#      - not product_patch_exists

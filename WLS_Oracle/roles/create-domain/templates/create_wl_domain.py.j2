@@ -1,0 +1,287 @@
+import sys,os
+import java.lang.System
+from weblogic.management.security.authentication import UserEditorMBean
+sys.path.insert(0, os.path.dirname(sys.argv[0]))
+import math
+import wlst_utility
+wlst_utility.initialise(globals())
+from wlst_utility import *
+from wlst_utility.constructors import *
+from weblogic.descriptor import BeanAlreadyExistsException
+
+print "sys.path.insert='" + os.path.dirname(sys.argv[0]) + "'"
+
+
+domain_name='{{ wl_domain_name }}'
+domain_home= '{{ wl_domain_home }}'+'/'
+template_path='{{ domain_template }}'
+
+template_path='{{ domain_template }}'
+
+def modify_foreign_jndi():
+{% if domain_info.foreign_jndi_to_modify is defined %}
+ {% for fjndi in domain_info.foreign_jndi_to_modify %}
+
+   cd ("/ForeignJNDIProvider/{{ fjndi.name }}/")
+   set("providerURL","{{ fjndi.url }}")
+
+  {% endfor %}
+
+  {% else %}
+   print "No foreign jndi to configure"
+  {% endif %}
+
+def set_jms_filetore_dir():
+ {% if wl_jms_filestore_dir is defined %}
+
+  cd ("/")
+  file_stores=cmo.getFileStores()
+  for file_store in file_stores:
+    file_store.setDirectory('{{ wl_jms_filestore_dir }}')
+ {% else %}
+  print "No filestore settings to be updated."
+ {% endif %}
+
+def configure_admin():
+  {% if domain_info.admin.server is defined %}
+
+  admin_name ='{{ domain_info.admin.server.name}}'
+  admin_listen_port={{ domain_info.admin.server.port }}
+  admin_listen_address='{{ domain_info.admin.server.listen_address }}'
+  cd('/Server/AdminServer')
+  print 'Setting AdminServer to ' + admin_name
+  Server(admin_name,
+         existingMBean=cmo,
+         listenAddress = admin_listen_address,
+         listenPort = admin_listen_port)
+  {% if domain_info.admin.server.ssl_port is defined %}
+
+  admin_ssl_listen_port= {{ domain_info.admin.server.ssl_port }}
+  cd('/Servers/'+ admin_name +'/SSL/'+name)
+  cmo.setEnabled(true)
+  cmo.setListenPort(ssl_port)
+
+  {% endif %}
+
+  {% else %}
+   print "No Admin server settings to be updated."
+  {% endif %}
+
+def configure_managed_server(server_name,listen_port,machine,cluster,root_dir,listen_address,args):
+
+  try:
+      cd('/Server/%s/' % server_name)
+  except Exception, e:
+      print "server already exist, ignoring"
+      cd('/')
+      create(server_name, 'Server')
+  assign('Server', server_name,'Cluster', cluster)
+  assign('Server', server_name,'Machine', machine)
+  cd('/Server/%s/' % server_name)
+  cmo.setListenPort(listen_port)
+  cmo.setListenAddress(listen_address)
+  create(server_name,'ServerStart')
+  cd('ServerStart/'+server_name)
+  cmo.setRootDirectory(root_dir)
+  set('Arguments',args )
+  set('ClassPath', '')
+  cd('/Server/%s/' % server_name)
+
+  {% if tlog_store_dir is defined %}
+
+  cd('/Servers/'+server_name +'/DefaultFileStore/'+server_name)
+  cmo.setDirectory('{{ tlog_store_dir }}')
+
+   {% endif %}
+
+def re_configure_adapters():
+
+{% if domain_info.application_plans is defined %}
+ {% for adapter in domain_info.application_plans %}
+
+    cd ('/AppDeployment/{{ adapter.name }}/')
+    cmo.setPlanPath('{{ adapter.plan }}')
+
+ {% endfor %}
+
+ {% else %}
+  print "No adapters configured for modification"
+ {% endif %}
+
+def modify_data_source(data_source, db_url,schema,password):
+  print 'Change datasource '+data_source
+  cd('/')
+  cd('/JDBCSystemResource/'+data_source+'/JdbcResource/'+data_source+'/JDBCDriverParams/NO_NAME_0')
+  ls()
+  set('URL',db_url)
+
+
+  if schema !=None:
+      cd('Properties/NO_NAME_0/Property/user')
+      set('Value',schema)
+
+  if password !=None:
+    set('PasswordEncrypted',password)
+
+def re_configure_data_sources():
+  {% if domain_info.data_sources is defined %}
+  {% for ds in domain_info.data_sources %}
+
+    name= '{{ ds.name }}'
+    url='{{ ds.url }}'
+
+    schema=None
+
+    {% if ds.schema is defined %}
+
+    schema= '{{ ds.schema }}'
+
+    {% endif %}
+
+    password=None
+
+    {% if ds.password is defined %}
+
+    schema= '{{ ds.password }}'
+
+    {% endif %}
+
+
+    modify_data_source(name,url,schema,password )
+
+  {% endfor %}
+  {% else %}
+    print "No Datasource to modify"
+  {% endif %}
+
+
+def create_node_managers():
+    {% if  domain_info.machines is defined %}
+
+    {% for machine in domain_info.machines %}
+
+       name='{{ machine.name }}'
+       listen_port={{ machine.listen_port }}
+       listen_address='{{ machine.listen_address }}'
+       type='{{ machine.type }}'
+       create_node_manager(name,listen_port,listen_address,type)
+
+       {% endfor %}
+
+       {% else %}
+
+        print "No machines to configure"
+
+       {% endif %}
+
+def configure_managed_servers():
+  {% if domain_info.managed_servers is defined %}
+
+    {%for server in domain_info.managed_servers %}
+
+      server_name= '{{ server.name }}'
+      listen_port={{ server.listen_port }}
+      machine= '{{ server.machine }}'
+      cluster= '{{ server.cluster }}'
+      root_dir='{{ server.root_dir }}'
+      listen_address='{{ server.listen_address }}'
+      args=''
+
+      {% if server.args is defined %}
+
+      args='{{ server.args }}'
+
+      {% endif %}
+
+      configure_managed_server(server_name,listen_port,machine,cluster,root_dir,listen_address,args)
+
+    {% endfor %}
+  {% endif %}
+
+
+def create_node_manager(name,listen_port,listen_address,type):
+    print 'Creating Machine ' + name
+    cd('/')
+    #check if bean already exists, if not create it.
+    try:
+     cd('Machines/' + name)
+    except Exception, e:
+      machine = UnixMachine(name)
+      cd('Machines/' + name)
+      NodeManager(name,
+          NMType = type,
+          nodeManagerHome = domain_home,
+          listenAddress = listen_address ,
+          listenPort = listen_port ,
+          )
+def addTemplates():
+
+    {%if additional_templates is defined %}
+    {%for template in additional_templates %}
+
+     addTemplate('{{ template }}' )
+
+    {% endfor  %}
+
+    {% else %}
+     print "no additional templates to add."
+    {% endif  %}
+
+################################################################################
+def create_clusters():
+{% if domain_info.clusters is defined %}
+
+  {%for cluster in domain_info.clusters %}
+
+  cluster_name ='{{ cluster.name }}'
+  print 'Creating Cluster ' +cluster_name
+  try:
+     Cluster(cluster_name,
+     clusterMessagingMode = 'unicast',
+     weblogicPluginEnabled = 1,)
+  except Exception, e:
+     print"cluster already exists"
+     cd('/Clusters/'+cluster_name)
+     cmo.setWeblogicPluginEnabled({{ cluster.wls_plugin_enabled }})
+  {% endfor  %}
+
+   {% else %}
+
+  print "No cluster to configure "
+  {% endif  %}
+
+
+################################################################################
+# simple function to group domain configuration.
+def configure_domain():
+  create_node_managers()
+  create_clusters()
+  configure_managed_servers()
+  re_configure_data_sources()
+  re_configure_adapters()
+  set_jms_filetore_dir()
+  modify_foreign_jndi()
+
+
+readTemplate(template_path)
+addTemplates()
+
+set('Name',domain_name)
+
+{% if domain_info.is_prod is defined %}
+
+set('ProductionModeEnabled','{{ domain_info.is_prod }}')
+
+{% endif %}
+
+
+cd('Security/'+domain_name+'/User/{{ domain_info.admin.user }}')
+cmo.setPassword('{{ domain_info.admin.password }}')
+
+configure_admin()
+configure_domain()
+writeDomain(domain_home)
+closeTemplate()
+
+print 'successfully created domain '+ domain_name +' at '+domain_home
+exit()

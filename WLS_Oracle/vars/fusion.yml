@@ -1,0 +1,82 @@
+
+#iam_base_version: 11.1.2.2.0
+java_version: 1.8.0_261-amd64
+infra_base_version: 12.2.1.4.0
+soa_base_version: 12.2.1.4.0
+wls_version: 12.2.1.4.0
+java_version_package: jdk-8u261-linux-x64.rpm
+
+user_limits:
+ -  { limit: 'soft', type: nofile, value: '{{ oracle_limits_soft_no_file }}'}
+ -  { limit: 'hard', type: nofile, value: '{{ oracle_limits_hard_no_file }}'}
+ -  { limit: 'soft', type: nproc, value: '{{ oracle_limits_soft_nproc }}'}
+ -  { limit: 'hard', type: nproc, value: '{{ oracle_limits_hard_nproc }}'}
+
+# jdk_installer: "{{ installers }}/java/{{ java_version }}/jdk-{{ java_build }}u{{ java_update }}-linux-x64.tar.gz"
+# jdk_installer: "{{ installers }}/java/{{ java_version_package }}"
+
+java_home: "{{ java_install_location }}/jdk{{ java_version }}/"
+
+infra_installer_file: fmw_12.2.1.4.0_infrastructure.jar
+soa_installer_file: fmw_12.2.1.4.0_soa.jar
+soa_silent_file: soa_silent.xml
+osb_installer_file: fmw_12.2.1.4.0_osb.jar
+osb_silent_file: osb_silent.xml
+
+wl_server_home: "{{ middleware_home }}/wlserver"
+wls_jar: "{{ wl_server_home }}/server/lib/weblogic.jar"
+wls_bsu_command_dir: "{{ middleware_home }}/utils/bsu/"
+wls_installer: "{{ installers }}/wls/wls1036_generic.jar"
+wls_home: "{{ middleware_home }}/wlserver"
+soa_home: "{{ middleware_home }}/soa"
+soa_opatch_command_dir: "{{ middleware_home}}/OPatch"
+osb_home: "{{ middleware_home }}/osb"
+osb_opatch_command_dir: "{{ middleware_home}}/OPatch"
+opatch_command_dir: "{{ middleware_home}}/OPatch"
+domain_template_dir: "{{ working_directory }}/wl_domain_template"
+wl_pack_command: "{{ wls_home }}/common/bin/pack.sh"
+wl_unpack_command: "{{ wls_home }}/common/bin/unpack.sh"
+
+#soa_opatch_command_dir: "{{ middleware_home }}/utils/bsu/" #fix me
+#opatch_command_dir: "{{ middleware_home }}/utils/bsu/" #fix me
+
+#wlst_command: "{{java_home}}/bin/java -cp  {{ wls_jar }} weblogic.WLST -skipWLSModuleScanning"
+wl_components: "WebLogic Server/Core Application Server|WebLogic Server/WebLogic SCA|WebLogic Server/Administration Console|WebLogic Server/Configuration Wizard and Upgrade Framework|WebLogic Server/Web 2.0 HTTP Pub-Sub Server|WebLogic Server/WebLogic JDBC Drivers|WebLogic Server/Third Party JDBC Drivers|WebLogic Server/WebLogic Server Clients|WebLogic Server/WebLogic Web Server Plugins|WebLogic Server/UDDI and Xquery Support|Oracle Coherence/Coherence Product Files"
+
+product: OSB
+schema_components_args: "-component MDS -component IAU -component IAU_APPEND -component IAU_VIEWER -component OPSS -component UCSUMS -component WLS -component STB -component SOAINFRA"
+
+additional_directories:
+#  - path: "{{ wl_domain_base }}"
+#    state: directory
+#    owner: "{{ oracle_user }}"
+#    group: "{{ oracle_install_group }}"
+#    mode: "0755"
+  - path: "{{ working_directory }}/wlst_utility"
+    state: directory
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"
+    mode: "0755"
+
+oracle_limits_soft_no_file: 4096
+oracle_limits_hard_no_file: 65536
+oracle_limits_soft_nproc: 2047
+oracle_limits_hard_nproc: 16384
+
+additional_packages:
+     - libXtst
+     - libXrender.so.1
+     - gcc-c++.x86_64
+     - glibc.i686
+     - glibc-devel.i686
+     - libaio-devel.x86_64
+     - libzip.i686
+     - libgcc.i686
+     - libstdc++.i686
+     - libstdc++-devel.i686
+     - libstdc++-devel.x86_64
+     - python-lxml
+     - compat-libcap1-1.10
+     - sysstat
+     - bind-utils
+###########################################################################################################

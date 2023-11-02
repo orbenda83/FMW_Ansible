@@ -1,0 +1,25 @@
+#Node manager properties
+DomainsFile={{ wls_domain_home }}/nodemanager/nodemanager.domains
+LogLimit=0
+PropertiesVersion=12.2.1.4.0
+AuthenticationEnabled=true
+NodeManagerHome={{ wls_domain_home }}/nodemanager
+JavaHome={{ java_home }}
+LogLevel=INFO
+DomainsFileEnabled=true
+ListenAddress={{ ansible_hostname }}
+NativeVersionEnabled=true
+ListenPort=5556
+LogToStderr=true
+weblogic.StartScriptName=startWebLogic.sh
+SecureListener=true
+LogCount=1
+QuitEnabled=false
+LogAppend=true
+weblogic.StopScriptEnabled=false
+StateCheckInterval=500
+CrashRecoveryEnabled=true
+weblogic.StartScriptEnabled=true
+LogFile={{ wls_domain_home }}/nodemanager/nodemanager.log
+LogFormatter=weblogic.nodemanager.server.LogFormatter
+ListenBacklog=50

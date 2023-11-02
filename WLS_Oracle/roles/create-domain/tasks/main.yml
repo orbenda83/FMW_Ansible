@@ -1,0 +1,5 @@
+---
+
+- include: prepare_for_wl_domain_creation.yml
+- include: create_wl_domain.yml
+- include: post_domain_creation_actions.yml

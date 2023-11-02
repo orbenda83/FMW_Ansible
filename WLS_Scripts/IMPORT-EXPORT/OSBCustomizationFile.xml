@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cus:Customizations xmlns:cus="http://www.bea.com/wli/config/customizations" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xt="http://www.bea.com/wli/config/xmltypes">
+  <cus:customization xsi:type="cus:EnvValueCustomizationType">
+    <cus:description/>
+    <cus:envValueAssignments>
+      <xt:envValueType>UDDI Auto Publish</xt:envValueType>
+      <xt:location xsi:nil="true"/>
+      <xt:owner>
+        <xt:type>ProxyService</xt:type>
+        <xt:path>default/foo</xt:path>
+      </xt:owner>
+      <xt:value xsi:type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema">false</xt:value>
+    </cus:envValueAssignments>
+    <cus:envValueAssignments>
+      <xt:envValueType>Service URI</xt:envValueType>
+      <xt:location xsi:nil="true"/>
+      <xt:owner>
+        <xt:type>ProxyService</xt:type>
+        <xt:path>default/foo</xt:path>
+      </xt:owner>
+      <xt:value xsi:type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema">/foo/updated</xt:value>
+    </cus:envValueAssignments>
+  </cus:customization>
+  <cus:customization xsi:type="cus:FindAndReplaceCustomizationType">
+    <cus:description/>
+    <cus:query>
+      <xt:resourceTypes>ProxyService</xt:resourceTypes>
+      <xt:envValueTypes>UDDI Auto Publish</xt:envValueTypes>
+      <xt:envValueTypes>Service URI</xt:envValueTypes>
+      <xt:refsToSearch xsi:type="xt:ResourceRefType">
+        <xt:type>ProxyService</xt:type>
+        <xt:path>default/foo</xt:path>
+      </xt:refsToSearch>
+      <xt:includeOnlyModifiedResources>false</xt:includeOnlyModifiedResources>
+      <xt:searchString>Search String</xt:searchString>
+      <xt:isCompleteMatch>false</xt:isCompleteMatch>
+    </cus:query>
+    <cus:replacement>Replacement String</cus:replacement>
+  </cus:customization>
+  <cus:customization xsi:type="cus:ReferenceCustomizationType">
+    <cus:description/>
+  </cus:customization>
+</cus:Customizations>

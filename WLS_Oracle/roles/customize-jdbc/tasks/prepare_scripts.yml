@@ -1,0 +1,12 @@
+---
+- name: template and copy wlst script file for configuring domain.
+  become_user: root
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ working_directory }}/{{ item.dest }}"
+    mode: 0755
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"
+  with_items:
+    - { "src": "jdbc.py", "dest": "jdbc.py" }
+    - { "src": "jdbc.properties.j2", "dest": "jdbc.properties" }

@@ -1,0 +1,5 @@
+---
+
+- include: execute-install.yml
+- include: execute-post-install-scripts.yml
+- include: create-listner.yml

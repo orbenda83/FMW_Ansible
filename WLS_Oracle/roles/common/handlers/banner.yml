@@ -1,0 +1,7 @@
+---
+
+- name: restart-sshd
+  become_user: root
+  systemd:
+    state: restarted
+    name: sshd

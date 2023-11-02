@@ -1,0 +1,93 @@
+#=======================================================================================
+#=======================================================================================
+#
+# This python script configures wl domain.
+#
+#=======================================================================================
+import sys
+domain_name='{{ wls_domain_name }}'
+
+def check_srvr_running(serverName):
+  domainRuntime()
+  cd("/ServerLifeCycleRuntimes/" + serverName)
+  serverState = cmo.getState()
+  print 'Server ' +serverName+ ' is : ' + serverState
+  if serverState != "RUNNING":
+     print "server " +serverName+ " failed to startup please check logs"
+     sys.exit(1)
+
+def wait_till_servers_are_started (tasks):
+  print "starting managed server, will take a while for servers to start"
+  while len(tasks) > 0:
+    for server,task in tasks.iteritems():
+     if task.getStatus()  != 'TASK IN PROGRESS' :
+        check_srvr_running(server)
+        del tasks[server]
+    java.lang.Thread.sleep(10000)
+
+def start_managed_servers(servers_to_start):
+  start_tasks={}
+  for server in servers_to_start:
+    start_tasks[server]=start(server,'Server',block='false')
+    print server +' has been started, will wait for the server to come up'
+  wait_till_servers_are_started(start_tasks)
+
+def wait_for_soa_server_to_come_up(mgd_serevrs):
+    iteration = 0
+
+    while len(mgd_serevrs) > 0:
+      if iteration > {{ soa_infra_start_wait_in_minutes }}:
+        raise "SOA Platform failed to come up in {{ soa_infra_start_wait_in_minutes }} minutes, check managed server server logs"
+      for server in mgd_serevrs:
+        name = ObjectName('oracle.soa.config:Location='+server+',name=soa-infra,j2eeType=CompositeLifecycleConfig,Application=soa-infra')
+        compositeData =mbs.getAttribute(name, "SOAPlatformStatus");
+        isReady = compositeData.get("isReady")
+        if isReady == 1:
+          mgd_serevrs.remove(server)
+        java.lang.Thread.sleep(60000)
+      iteration = iteration +1
+    print "SOA Servers are up and running"
+
+def get_server_names(svrNames):
+  server_names = []
+
+  svrNameArray=svrNames.split(',')
+  
+  for i in range(0,len(svrNameArray)):
+    print svrNameArray[i] + ' is configured for starting'
+    server_names.append(svrNameArray[i])
+
+  print server_names
+  return server_names
+
+
+admin_user_name= '{{ wls_admin_user }}'
+password='{{ wls_admin_pass }}'
+admin_listen_address='{{ admin_listen_address }}'
+admin_listen_port='{{ admin_port }}'
+connect(admin_user_name,password,'t3://'+admin_listen_address+':'+admin_listen_port)
+domainRuntime()
+
+if osbEnabled == 'true':
+  mgd_serevrs = get_server_names(osbSvrNames)
+  start_managed_servers(mgd_serevrs)
+
+if soaEnabled == 'true':
+  mgd_serevrs = get_server_names(soaSvrNames)
+  start_managed_servers(mgd_serevrs)
+
+  wait_for_soa_server_to_come_up(mgd_serevrs)
+
+if essEnabled == 'true':
+  mgd_serevrs = get_server_names(essSvrNames)
+  start_managed_servers(mgd_serevrs)
+
+if bamEnabled == 'true':
+  mgd_serevrs = get_server_names(bamSvrNames)
+  start_managed_servers(mgd_serevrs)
+
+
+print "successfully started managed servers"
+
+
+exit()

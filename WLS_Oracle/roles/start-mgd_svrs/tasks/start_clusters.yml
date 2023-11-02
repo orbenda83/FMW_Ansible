@@ -1,0 +1,19 @@
+---
+
+- name: Execute start cluster script
+  shell: "{{ wlst_command }} {{ working_directory }}/start_clusters.py -loadProperties {{ working_directory }}/soaDomain.properties"
+  become_user: '{{ oracle_user }}'
+  register: command_result
+
+
+#- name: Validate the create output to see all went well.
+#  assert:
+#    that:
+#      - "'successfully started managed servers' not in command_result.stdout_lines"
+#    msg: "starting the domain failed, check the logs.."
+#  when: command_result.changed
+
+- name: Validate the create output to see all went well.
+  debug: msg="{{ command_result.stdout_lines }}"
+  when: command_result.changed
+  failed_when: "'successfully started managed servers' not in command_result.stdout_lines"

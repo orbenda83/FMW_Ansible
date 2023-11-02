@@ -1,0 +1,36 @@
+---
+
+- name: set the versioned template file
+  set_fact:
+    version_response_file: "db-install-{{ release }}-{{ db_base_version }}.rsp.j2"
+    default_response_file: "db-install-{{ release }}-default.rsp.j2"
+
+- name: template installer response file
+  template:
+    src: "{{ version_response_file | default(default_response_file) }}"
+    dest: "{{ working_directory }}/db-install.rsp"
+
+- name: run installer
+  shell: "{{ oracle_database_binary_src }}/runInstaller -silent -waitforcompletion  -responseFile {{ working_directory }}/db-install.rsp"
+  args:
+    creates: "{{ oracle_home }}/bin/sqlplus"
+  become_user: "{{oracle_user}}"
+  register: command_result
+
+- name: Validate the install output to see all went well.
+  assert:
+      that:
+         - command_result.stdout | search("Successfully Setup Software.")
+      msg: "DB install failed, check the install logs.."
+  when: command_result.changed
+
+- name: find DB version
+  command: '{{ opatch_command }} lsinventory'
+  register: db_version_check
+  become_user: "{{ oracle_user }}"
+
+- name: Validate the version of DB.
+  assert:
+      that:
+         - db_version_check.stdout | search("Oracle Database 11g.*{{ db_base_version }}")
+      msg: "Required  DB version {{ db_base_version }} is not installed, failing.."

@@ -1,0 +1,11 @@
+---
+
+- name: Update BSU settings for memory args before execution.
+  replace:
+    path: "{{ wls_bsu_command_dir }}/bsu.sh"
+    regexp: '^MEM_ARGS.*$'
+    replace: 'MEM_ARGS="-Xms2g -Xmx2g -XX:-UseGCOverheadLimit" '
+
+- include: validate_and_apply_patch.yml
+  with_items: "{{ wls_patches }}"
+  when: wls_patches is defined

@@ -1,0 +1,76 @@
+---
+
+- name: create the default groups required at os level for the products"
+  become: true
+  become_user: root
+  group:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ default_user_groups }}"
+  when: default_user_groups is defined
+
+
+- name: create the additional groups required at os level for the specific product family"
+  become: true
+  become_user: root
+  group:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ additional_user_groups }}"
+  when: additional_user_groups is defined
+
+- block:
+  - name: create the default users required at os level for the specific product family"
+    become: true
+    become_user: root
+    user:
+      name: "{{ item.name }}"
+      state: present
+      comment: "{{ item.comment }}"
+      groups: "{{ item.groups }}"
+      createhome: yes
+      # password: "{{ soa_pass }}"
+      # update_password: on_create
+    with_items: "{{ default_users }}"
+  
+  - name: Set user password
+    become: true
+    become_user: root
+    shell: 'echo "{{ soa_pass }}" | passwd "{{ item.name }}" --stdin'
+    with_items: "{{ default_users }}"
+
+  when: default_users is defined
+
+- block:
+  - name: create the additional users required at os level for the specific product family"
+    become: true
+    become_user: root
+    user:
+      name: "{{ item.name }}"
+      state: present
+      createhome: yes
+      comment: "{{ item.comment }}"
+      groups: "{{ item.groups }}"
+      # password: "{{ soa_pass }}"
+      # update_password: on_create
+    with_items: "{{ additional_users }}"
+
+
+  - name: Set user password
+    become: true
+    become_user: root
+    shell: 'echo "{{ soa_pass }}" | passwd "{{ item.name }}" --stdin'
+    with_items: "{{ additional_users }}"
+
+
+  when: additional_users is defined
+
+- name: Allow 'wheel' group to have passwordless sudo
+  become: true
+  become_user: root
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: '^%wheel'
+    line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'

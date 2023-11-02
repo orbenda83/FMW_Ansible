@@ -1,0 +1,3 @@
+---
+- include: prepare_for_shutdown.yml
+- include: shutdown_servers.yml

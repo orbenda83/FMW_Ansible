@@ -1,0 +1,22 @@
+---
+- hosts: osb-admin
+  vars_files:
+    - ../vars/fusion.yml
+    - ../vars/bpm/common.yml
+    - ../vars/bpm/wls_domain.yml
+    - ../vars/bpm/common_resources_to_copy.yml
+  roles:
+    - role: rcu
+    - role: configure-domain
+    - role: configure-nodemanager
+    - role: start-adminsvr
+    - role: configure-topic-fix
+    # TODO: Add JMS resources configuration ROLE
+    # TODO: Add DS resources configuration ROLE
+    # TODO: Add Adapter Redeployment ROLE
+    # TODO: Add DB adapter, JMS Adapter configuration ROLE
+    # TODO: Add App Deployments ROLE
+    # TODO: Add JKS modification ROLE
+    # TODO: Add OID, Asserter providers configuration ROLE
+    # TODO: Add UMS XMAIL resources configuration ROLE
+    - role: pack-domain

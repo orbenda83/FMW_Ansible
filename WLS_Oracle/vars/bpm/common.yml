@@ -1,0 +1,30 @@
+wlst_command: "{{ oracle_common_home }}/common/bin/wlst.sh"
+common_jdbc_url: "jdbc:oracle:thin:@{{ db_server }}:{{ db_port }}:{{ db_sid }}"
+
+#osb
+osb_home: "{{ middleware_home }}/osb"
+osb_binary_src: "{{ installers }}/osb/"
+osb_patch_src_dir: "{{ osb_binary_src }}/patches"
+osb_base_version:  "12.2.1.4.0"
+#osb_patches:
+#  - id: "20423630"
+#    file: "{{ osb_patch_src_dir }}/p20423630_111170_Generic.zip"
+#    apply_to_oracle_common_home: no
+#    apply_to_oracle_home: yes
+
+osb_opatch_command: "{{ osb_home }}/OPatch/opatch"
+osb_relase_repo: "{{ repository }}/{{ release_number }}/osb"
+
+#bpm
+bpm_home: "{{ middleware_home }}/soa"
+bpm_binary_src: "{{ installers }}/bpm/"
+bpm_patch_src_dir: "{{ bpm_binary_src }}/patches"
+bpm_base_version:  "12.2.1.4.0"
+#bpm_patches:
+#  - id: "20423630"
+#    file: "{{ bpm_patch_src_dir }}/p20423630_111170_Generic.zip"
+#    apply_to_oracle_common_home: no
+#    apply_to_oracle_home: yes
+
+bpm_opatch_command: "{{ middleware_home }}/OPatch/opatch"
+bpm_relase_repo: "{{ repository }}/{{ release_number }}/soa"

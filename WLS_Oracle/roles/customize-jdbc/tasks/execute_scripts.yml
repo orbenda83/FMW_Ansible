@@ -1,0 +1,17 @@
+---
+- name: Verify /tmp is accessible
+  become_user: root
+  file:
+    path: /tmp
+    state: directory
+    mode: '0777'
+
+- name: Execute configure wl JDBC Resources in domain script
+  become_user: "{{ oracle_user }}"
+  shell: "{{ wlst_command }} {{ working_directory }}/jdbc.py {{ working_directory }}/jdbc.properties"
+  register: command_result
+  
+- name: Print and check execute of command
+  debug: msg="{{ command_result.stdout_lines }}"
+  when: command_result.changed
+  failed_when: "'DS resources creation finished successfully.' not in command_result.stdout_lines"

@@ -1,0 +1,5 @@
+---
+
+
+- include: prepare_for_soa_configuration.yml
+- include: configure_soa_infra.yml

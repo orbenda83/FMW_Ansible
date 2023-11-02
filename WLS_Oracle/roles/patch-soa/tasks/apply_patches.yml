@@ -1,0 +1,5 @@
+---
+
+- include: validate_and_apply_patch.yml
+  with_items: "{{ soa_patches }}"
+  when: soa_patches is defined

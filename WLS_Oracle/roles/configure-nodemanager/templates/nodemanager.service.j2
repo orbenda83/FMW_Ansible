@@ -1,0 +1,14 @@
+[Unit]
+Description=WebLogic {{ wls_domain_name }} Node Manager service
+After=syslog.target network.target
+
+[Service]
+Type=simple
+ExecStart={{ wls_domain_home}}/bin/manageNM.sh start
+ExecStop={{ wls_domain_home}}/bin/manageNM.sh stop
+TimeoutSec=30
+KillMode=process
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

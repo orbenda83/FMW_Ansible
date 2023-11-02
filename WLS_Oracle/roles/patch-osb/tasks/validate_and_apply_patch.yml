@@ -1,0 +1,50 @@
+---
+
+- name: Get a report of patches installed.
+  command: "{{ osb_opatch_command_dir }}/opatch lsinventory"
+  become_user: "{{ oracle_user }}"
+  register: opatch_ouput
+  
+- name: Patch ID to install
+  debug: msg="Patch id to install is :{{ item.id }}."  
+
+- name: set flag for the existence of patch.
+  set_fact:
+    patch_exists: "{{ 'yes' if item.id in opatch_ouput.stdout else 'no' }}"
+
+- block:
+  - name: Copy and extract patchset Binaries
+    become_user: root
+    unarchive:
+      src: '{{ item.file }}'
+      dest: '{{ patch_staging_directory }}'
+      remote_src: no
+      owner: '{{ oracle_user }}'
+      group: '{{ oracle_install_group }}'
+      mode: 0744
+      creates: "{{ patch_staging_directory }}/{{ item.id }}"
+
+  - name: Apply the patch now to oracle_common
+    shell: "{{ osb_opatch_command_dir }}/opatch apply -silent -jre {{ java_home }}/jre -oh {{ middleware_home }} {{ patch_staging_directory }}/{{ item.id }}"
+    environment:
+       ORACLE_HOME: "{{ middleware_home }}"
+       OPATCH_NO_FUSER: true
+    args:
+      chdir: "{{ patch_staging_directory }}/{{ item.id }}"
+    become_user: '{{ oracle_user }}'
+    register: command_result
+    failed_when: "'OPatch succeeded.' not in command_result.stdout_lines"
+    when: item.apply_to_oracle_home
+
+  - name: Apply the patch now to oracle_osb.
+    shell: "{{ osb_opatch_command_dir }}/opatch apply -silent -jre {{ java_home }}/jre -oh {{ middleware_home }} {{ patch_staging_directory }}/{{ item.id }}"
+    environment:
+       ORACLE_HOME: "{{ middleware_home }}"
+       OPATCH_NO_FUSER: true
+    args:
+      chdir: "{{ patch_staging_directory }}/{{ item.id }}"
+    become_user: '{{ oracle_user }}'
+    register: command_result
+    failed_when: "'OPatch succeeded.' not in command_result.stdout_lines"
+    when: item.apply_to_product_home
+  when: not patch_exists

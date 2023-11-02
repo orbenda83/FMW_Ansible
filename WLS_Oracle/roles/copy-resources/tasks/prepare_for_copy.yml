@@ -1,0 +1,31 @@
+
+- set_fact:
+    date: "{{ lookup('pipe', 'date +%Y%m%d-%H%M') }}"
+    owner: "{{ item.owner if item.owner is defined else oracle_user }}"
+    group: "{{ item.group if item.group is defined else oracle_install_group }}"
+    mode : "{{ item.mode if item.mode is defined else default_file_mode }}"
+    create_dest : "{{ item.create_dest if item.create_dest is defined else 'yes' }}"
+    backup : "{{ item.backup if item.backup is defined else 'no' }}"
+    destination_folder: "{{ item.destination+'/'+ item.to_folder if item.to_folder is defined else item.destination }}"
+
+- block:
+  - name: check folder to backup exists.
+    stat:
+        path: "{{ destination_folder }}"
+    register: file_details
+
+  - name: rename the destination.
+    command: "mv  {{ destination_folder }} {{ destination_folder }}_{{ date }}.backup"
+    when: file_details.stat.exists
+  when:  backup
+- debug:
+    msg: "System {{ owner }} has uuid {{ group }}"
+
+- name: Create the file for the destination.
+  file:
+    path: "{{ destination_folder }}"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"
+    mode: "{{ mode }}"
+    state: directory
+  when: create_dest

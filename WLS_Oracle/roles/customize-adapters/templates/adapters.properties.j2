@@ -1,0 +1,20 @@
+wls_user="{{ wls_admin_user }}"
+wls_pass="{{ wls_admin_pass }}"
+wls_admin="t3://{{ admin_server_address }}:{{ admin_server_port }}"
+appPath="{{ soa_home }}/soa/connectors/"
+domainConfigPath="{{ wl_domain_base}}/{{ wls_domain_name }}/config/"
+
+{% for adapter in adapters %}
+# {{ adapter.adapter }} Adapter
+{{ adapter.adapter | lower }}AdapterEnabled={{ adapter.enabled }}
+{{ adapter.adapter | lower }}={
+    "name": "{{ adapter.name }}",
+    "planName": "{{ adapter.planName }}",
+    "cfs": [{% for cf in adapter.cfs %}{
+        "name": "{{ cf.name }}",
+        "ds": "{{ cf.ds }}",
+        "dsType": "{{ cf.dsType }}"
+    }{{ ',' if not loop.last else '' }}{% endfor %}]
+}
+
+{% endfor %}

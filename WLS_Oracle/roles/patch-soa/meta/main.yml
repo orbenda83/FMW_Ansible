@@ -1,0 +1,6 @@
+galaxy_info:
+  author: johncy |Joseph
+  description: Install OSB role
+  license: none
+  min_ansible_version: 1.3
+  galaxy_tags: []

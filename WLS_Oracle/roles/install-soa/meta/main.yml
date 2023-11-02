@@ -1,0 +1,8 @@
+galaxy_info:
+  author: Niz Horsefield
+  description: SOA role
+  license: none
+  min_ansible_version: 1.3
+  galaxy_tags: []
+dependencies:
+  

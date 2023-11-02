@@ -1,0 +1,7 @@
+---
+
+tools:
+  - yum
+  - curl
+  - unzip
+  - nfs-utils

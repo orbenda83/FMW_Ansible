@@ -1,0 +1,86 @@
+---
+
+# wl_domain_name: OSBDomain
+wls_domain_home: "{{ wl_domain_base }}/{{ wls_domain_name }}"
+wls_apps_home: "{{ middleware_home }}/user_projects/applications"
+domain_template: "{{ repository }}/{{ release_number }}/osb/domain_templates/osbdomain.jar"
+
+wls_mgd_server_root_dir: "{{ wls_mgd_server_dir_root }}/{{ wls_domain_name}}"
+admin_server_dir: "{{ wls_domain_home }}/servers/{{ admin_server_name }}/"
+
+nm_listen_port: 3056
+osb_cluster: OSBCluster
+
+domain_info:
+  admin:
+    server:
+      name: AdminServer
+      port: 3021
+      listen_address: <HOST_IP>
+    user: weblogic
+    password: <WLS_PASS>
+  clusters:
+   - name: "{{ osb_cluster }}"
+     wls_plugin_enabled: true
+  machines:
+   - name: mach1
+     listen_port: "{{ nm_listen_port }}"
+     listen_address: <HOST_IP>
+     type: Plain
+   - name: mach2
+     listen_port: "{{ nm_listen_port }}"
+     listen_address: <HOST_IP>
+     type: Plain
+
+  managed_servers:
+    - name: osb_server1
+      listen_port: 3041
+      listen_address: <HOST_IP>
+      machine: mach1
+      root_dir: "{{ wls_mgd_server_root_dir }}"
+      cluster: "{{ osb_cluster }}"
+      args: -Xms2048m -Xmx2048m -XX:CompileThreshold=8000 -XX:PermSize=128m -XX:MaxPermSize=512m -Dhttps.protocols=TLSv1.0,TLSv1.1,TLSv1.2 -Xloggc:gcosb1.log
+
+    - name: osb_server2
+      listen_port: 3042
+      listen_address: <HOST_IP>
+      machine: mach2
+      root_dir: "{{ wls_mgd_server_root_dir }}"
+      cluster: "{{ osb_cluster }}"
+      is_prod_mode_enabled: true
+      start: no
+
+      args: -Xms2048m -Xmx2048m -XX:CompileThreshold=8000 -XX:PermSize=128m -XX:MaxPermSize=512m -Dhttps.protocols=TLSv1.0,TLSv1.1,TLSv1.2 -Xloggc:gcosb1.log
+
+  data_sources:
+    - name: wlsbjmsrpDataSource
+      url: "{{ common_jdbc_url }}"
+    - name: WIAM_DataSource
+      url: "{{ common_jdbc_url }}"
+    - name: CSFXADataSource
+      url: "{{ common_jdbc_url }}"
+    - name: CSFDataSource
+      url: "{{ common_jdbc_url }}"
+    - name: OIMEVO_NonXADS
+      url: "{{ common_jdbc_url }}"
+    - name: OIMEVO_NonXADS
+      url: "{{ common_jdbc_url }}"
+    - name: OIM_TPS
+      url: "{{ common_jdbc_url }}"
+    - name: VEPS_XADS
+      url: "{{ common_jdbc_url }}"
+    - name: VINE_DS
+      url: "{{ common_jdbc_url }}"
+
+  application_plans:
+     - name: DbAdapter
+       plan: "{{ osb_home }}/soa/connectors/DBPlan.xml"
+     #- name: AqAdapter
+     #  plan: "{{ osb_home }}/soa/connectors/AQPlan.xml"
+
+realm_to_import:
+   source: "{{ osb_relase_repo }}/realms/OSBRealm.tar"
+   copy_to: "{{ working_directory }}"
+   import_from: "{{ working_directory }}/OSBRealmExport"
+
+osb_customization_file: "{{ osb_relase_repo }}/customisation/ALSBCustomizationFile.xml"

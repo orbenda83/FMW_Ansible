@@ -1,0 +1,2 @@
+---
+- include: start_admin_server.yml

@@ -1,0 +1,84 @@
+Nodemanager.properties
+=========================
+KeyStores=CustomIdentityAndCustomTrust
+CustomIdentityKeystoreType=jks
+CustomIdentityKeyStoreFileName=/opt/oracle/certs/identity.jks
+CustomIdentityKeyStorePassPhrase=password
+CustomIdentityPrivateKeyPassPhrase=password
+CustomIdentityAlias=ALIAS
+CustomTrustKeystoreType=jks
+CustomTrustKeyStoreFileName=/opt/oracle/certs/trust.jks
+CustomTrustKeyStorePassPhrase=password
+
+vi /opt/oracle/middleware/oracle_common/common/bin/wlst.sh
+==========================================================
+export WLST_PROPERTIES="${WLST_PROPERTIES}
+-Dweblogic.security.TrustKeyStore=CustomTrust
+-Dweblogic.security.CustomTrustKeyStoreFileName=/opt/oracle/certs/trust.jks
+-Dweblogic.security.SSL.trustedCAkeystore=/opt/oracle/certs/trust.jks"
+
+// NM
+KeyStores=CustomIdentityAndCustomTrust
+CustomIdentityKeyStoreFileName=kss://BOJ/identity
+CustomIdentityKeyStoreType=KSS
+CustomIdentityKeyStorePassPhrase=password
+CustomIdentityAlias=ALIAS
+CustomIdentityPrivateKeyPassPhrase=password
+
+
+// BOJ server certs
+keytool -v -import  -trustcacerts  -alias bojdevca -file DEV_BOJDEV_AD1_CA.cer -keystore trust.jks -storepass password -noprompt
+keytool -v -import  -trustcacerts  -alias ALIAS -file ALIAS.cer -keystore trust.jks -storepass password -noprompt
+keytool -v -list -keystore /opt/oracle/certs/trust.jks
+
+/opt/oracle/middleware/oracle_common/common/bin/wlst.sh
+connect('weblogic','B0jP@sswd','t3://IP:PORT')
+svc = getOpssService(name='KeyStoreService')
+svc.listKeyStoreAliases(appStripe='BOJ', name='trust', password='password',type='TrustedCertificate')
+svc.importKeyStore(appStripe='BOJ', name='trust', password='password', aliases='ALIAS', keypasswords='password', type='JKS', permission=false, filepath='/opt/oracle/certs/trust.jks')
+
+keytool -importkeystore -srckeystore ALIAS.pfx -srcstoretype pkcs12 -destkeystore identity.jks -deststoretype JKS
+keytool -changealias -keystore identity.jks -alias FROMALIAS -destalias ALIAS
+keytool -v -list -keystore /opt/oracle/certs/identity.jks
+/opt/oracle/middleware/oracle_common/common/bin/wlst.sh
+connect('weblogic','B0jP@sswd','t3://IP:PORT')
+svc = getOpssService(name='KeyStoreService')
+svc.listKeyStoreAliases(appStripe='BOJ', name='identity', password='password',type='Certificate')
+svc.importKeyStore(appStripe='BOJ', name='identity', password='password', aliases='ALIAS', keypasswords='password', type='JKS', permission=false, filepath='/opt/oracle/certs/identity.jks')
+
+
+//OVD
+. /opt/oracle/middleware/user_projects/domains/accpt_domain/bin/setDomainEnv.sh
+cd /opt/oracle/middleware/oracle_common/bin/
+./wlst.sh
+connect('weblogic','B0jP@sswd','t3://IP:PORT')
+svc = getOpssService(name='KeyStoreService')
+svc.listKeyStoreAliases(appStripe='BOJ', name='trust', password='password',type='TrustedCertificate')
+svc.exportKeyStoreCertificate(appStripe='BOJ', name='trust', password='password', alias='bank of jerusalem root ca', keypassword='password', type='Certificate', filepath='/opt/oracle/certs/root.cer')
+svc.exportKeyStoreCertificate(appStripe='BOJ', name='trust', password='password', alias='accptsubca', keypassword='password', type='Certificate', filepath='/opt/oracle/certs/subca.cer')
+svc.exportKeyStoreCertificate(appStripe='BOJ', name='trust', password='password', alias='accept_woldcard', keypassword='password', type='Certificate', filepath='/opt/oracle/certs/wc.cer')
+
+cd /opt/oracle/middleware/oracle_common/bin/
+./libovdconfig.sh -host IP -port PORT -userName weblogic -domainPath /opt/oracle/middleware/user_projects/domains/XXX_domain -createKeystore
+cd /opt/oracle/middleware/user_projects/domains/XXX_domain/config/fmwconfig/ovd/default/keystores/
+keytool -list -keystore  adapters.jks
+keytool -v -import  -trustcacerts  -alias rootCA -file /opt/oracle/certs/root.cer -keystore adapters.jks -storepass password -noprompt
+keytool -v -import  -trustcacerts  -alias accptsubca -file /opt/oracle/certs/subca.cer -keystore adapters.jks -storepass password -noprompt
+keytool -v -import  -trustcacerts  -alias cert -file /opt/oracle/certs/wc.cer -keystore adapters.jks -storepass password -noprompt
+
+
+WLST.sh
+
+#!/bin/sh
+
+SCRIPTNAME=$0
+SCRIPTPATH=`dirname "${SCRIPTNAME}"`
+MW_HOME=`cd "${SCRIPTPATH}/../../.." ; pwd`
+export MW_HOME
+export WLST_PROPERTIES="${WLST_PROPERTIES}
+-Dweblogic.security.TrustKeyStore=CustomTrust
+-Dweblogic.security.CustomTrustKeyStoreFileName=/opt/oracle/certs/trust.jks
+-Dweblogic.security.SSL.trustedCAkeystore=/opt/oracle/certs/trust.jks"
+
+# Delegate to the common delegation script ...
+"${SCRIPTPATH}/fmwconfig_common.sh" wlst_internal.sh "$@"

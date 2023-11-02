@@ -1,0 +1,24 @@
+
+- name: set the versioned template file
+  set_fact:
+    lstnr_version_response_file: "netca-{{ release }}-{{ db_base_version }}.rsp.j2"
+    lstnr_default_response_file: "netca-{{ release }}-default.rsp.j2"
+
+- name: Template listener response file
+  template:
+    src: "{{ lstnr_version_response_file | default(lstnr_default_response_file) }}"
+    dest: "{{ working_directory }}/netca.rsp"
+
+- name: configure listener
+  shell: "{{ oracle_home }}/bin/netca /silent /responseFile {{ working_directory }}/netca.rsp"
+  args:
+      creates: "{{ oracle_home }}/network/admin/{{ oracle_database_listener_name }}.ora"
+  become_user: "{{ oracle_user }}"
+  register: command_result
+
+- name: Validate the install output to see all went well.
+  assert:
+      that:
+         - command_result.stdout | search("Oracle Net Services configuration successful. The exit code is 0")
+      msg: "DB install failed, check the install logs.."
+  when: command_result.changed

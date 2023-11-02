@@ -1,0 +1,19 @@
+---
+
+- name: Configure common OSB params and directories
+  include: osb-common.yml
+     
+- name: Install OSB software
+  include: osb-software.yml
+     
+- name: Configure OSB domain on Admin
+  include: osb-configure-admin.yml
+
+- name: Configure OSB domain setup managed servers
+  include: osb-configure-managed.yml
+
+- name: Start OSB domain
+  include: osb-start-domain.yml
+
+- name: Customize OSB domain
+  include: osb-customize-domain.yml

@@ -1,0 +1,4 @@
+- include: prepare_for_copy.yml
+
+- name: Copy the folders to the destination
+  command: cp -pr "{{ item.source }}" "{{ destination_folder }}/"

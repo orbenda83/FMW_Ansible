@@ -1,0 +1,65 @@
+#=======================================================================================
+#=======================================================================================
+#
+# This python script configures wl domain.
+#
+#=======================================================================================
+import sys
+domain_name='{{ wl_domain_name }}'
+
+def check_svr_running(serverName):
+  domainRuntime()
+  cd("/ServerLifeCycleRuntimes/" + serverName)
+  serverState = cmo.getState()
+  print 'Server ' +serverName+ ' is : ' + serverState
+  if serverState == "RUNNING":
+   return true
+  return false
+
+def wait_till_servers_are_down (tasks):
+  print "starting managed server, will take a while for servers to start"
+  while len(tasks) > 0:
+    for server,task in tasks.iteritems():
+     if task.getStatus()  != 'TASK IN PROGRESS' :
+        if check_svr_running(server):
+          raise "Server " +svr+ " is running, and no shutdown task in progress, something gone wrong.. "
+        del tasks[server]
+    java.lang.Thread.sleep(10000)
+
+def shutdown_managed_servers(servers_to_stop):
+  start_tasks={}
+  for server in servers_to_stop:
+    if check_svr_running(server):
+      start_tasks[server]=shutdown(server,'Server','true',1000,force='true', block='true')
+      print server +' shutdown has been initiated, will wait for the server to be down'
+  wait_till_servers_are_down(start_tasks)
+
+def get_server_names(cluster):
+
+{% for svr in domain_info.managed_servers %}
+ start_sever=true
+ server_names = []
+ if '{{ svr.cluster }}'==cluster:
+    server_names.append('{{ svr.name }}')
+{% endfor %}
+
+ return server_names
+
+
+admin_user_name= '{{ domain_info.admin.user }}'
+password='{{ domain_info.admin.password }}'
+admin_listen_address='{{ domain_info.admin.server.listen_address }}'
+admin_listen_port='{{ domain_info.admin.server.port }}'
+connect(admin_user_name,password,'t3://'+admin_listen_address+':'+admin_listen_port)
+domainRuntime()
+{% for cluster in domain_info.clusters %}
+
+cluster_name = '{{ cluster.name }}'
+mgd_serevrs = get_server_names(cluster_name)
+shutdown_managed_servers(mgd_serevrs)
+
+{% endfor %}
+
+
+print "successfully shutdown managed servers"
+exit()

@@ -1,0 +1,29 @@
+
+- set_fact:
+    date: "{{ lookup('pipe', 'date +%Y%m%d-%H%M') }}"
+    owner: "{{ item[0].owner if item[0].owner is defined else oracle_user }}"
+    group: "{{ item[0].group if item[0].group is defined else oracle_install_group }}"
+    mode : "{{ item[0].mode if item[0].mode is defined else default_file_mode }}"
+    create_dest : "{{ item[0].create_dest if item[0].create_dest is defined else 'yes' }}"
+    backup : "{{ item[0].backup if item[0].backup is defined else 'no' }}"
+    destination_folder: "{{ item[0].destination+'/'+ item[1].name +'/' + item[0].to_folder if item.to_folder is defined else item[0].destination +'/'+item[1].name }}"
+
+- block:
+  - name: check folder to backup exists.
+    stat:
+        path: "{{ destination_folder }}"
+    register: file_details
+
+  - name: rename the destination.
+    command: "mv  {{ destination_folder }} {{ destination_folder }}_{{ date }}.backup"
+    when: file_details.stat.exists
+  when:  backup
+
+- name: Create the file for the destination.
+  file:
+    path: "{{ destination_folder }}"
+    owner: "{{ owner }}"
+    group: "{{ group }}"
+    mode: "{{ mode }}"
+    state: directory
+  when: create_dest and item[0].cluster == item[1].cluster and item[1].listen_address == ansible_hostname

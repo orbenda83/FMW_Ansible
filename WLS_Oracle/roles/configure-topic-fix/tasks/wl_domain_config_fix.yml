@@ -1,0 +1,24 @@
+---
+- name: Verify /tmp is accessible
+  become_user: root
+  file:
+    path: /tmp
+    state: directory
+    mode: '0777'
+
+- name: Execute configure wl domain script
+  become_user: "{{ oracle_user }}"
+  shell: "{{ wlst_command }} {{ working_directory }}/fix_domain.py -loadProperties {{ working_directory }}/soaDomain.properties"
+  register: command_result
+  
+- name: Print and check execute of command
+  debug: msg="{{ command_result.stdout_lines }}"
+  when: command_result.changed
+  failed_when: "'Successfully configured wls domain' not in command_result.stdout_lines"
+
+# - name: Validate the create output to see all went well.
+#   assert:
+#     that:
+#        - "'Successfully configured wls domain' not in command_result.stdout"
+#     msg: "Configuring the domain failed, check the logs.."
+#   when: command_result.changed

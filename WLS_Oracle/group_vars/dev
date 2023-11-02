@@ -1,0 +1,270 @@
+wl_jms_filestore_dir: "{{ shared_mount }}data/jms"
+wl_tlog_store_dir: "{{ shared_mount }}data/tlog"
+
+wls_nm_listen_port: 5556
+
+#target_operating_system: OracleLinux
+#target_operating_system_version: 6.9
+
+bpm_lb_address: http://vip:8001
+
+syspassword: PASSWORD
+soa_env: dev
+soa_pass: PASSWORD
+
+db_server: dev-db
+db_port: 1521
+db_sid: osbdb_sid
+db_service: osbdb_srv
+db_schema_common_password: dbpassword
+db_sys_password: syspassword
+soa_repo_prefix: DEV
+soa_tablespace: TBS_SOAINFRA
+
+# silent install common vars
+specify_download_location: false
+skip_software_updates: true
+is_valid_middleware_home: true
+appserver_type: WLS
+
+# Domain properties
+wls_domain_name: dev_domain
+wls_admin_user: weblogic
+wls_admin_pass: <WLS_PASS>
+wls_admin_url: http://admin-ip:7001
+
+admin_port: 7001
+admin_listen_address: admin-ip
+admin_server_name: AdminServer
+
+is_migratable: true
+
+servers_amount: 2
+servers:
+- index: 1
+  address: admin-ip
+  machine: DEVSOAADMIN
+- index: 2
+  address: osb-ip1
+  machine: DEVSOANODE01
+- index: 3
+  address: osb-ip2
+  machine: DEVSOANODE02
+
+admin_server_address: admin-ip
+admin_server_port: 7001
+admin_server_args: "-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1024m -Xmx1532m"
+
+osb_enabled: true
+osb_java_args: "-XX:PermSize=256m -XX:MaxPermSize=512m -Xms6144m -Xmx6144m"
+osb_cluster: osb_cluster
+osb_port: 8011
+osb_servers:
+- index: 1
+  name: osb_server1
+  address: osb-ip1
+  machine: DEVSOANODE01
+- index: 2
+  name: osb_server2
+  address: osb-ip2
+  machine: DEVSOANODE02
+
+soa_enabled: false
+bpm_enabled: false
+b2b_enabled: false
+soa_java_args: "-XX:PermSize=256m -XX:MaxPermSize=752m -Xms8192m -Xmx8192m"
+soa_cluster: bpm_cluster
+soa_port: 8001
+soa_servers:
+- index: 1
+  name: bpm_server1
+  address: testlinbpm1.bgu.ac.il
+  machine: testlinbpm1
+- index: 2
+  name: bpm_server2
+  address: testlinbpm2.bgu.ac.il
+  machine: testlinbpm2
+soa_objects_prefixes:
+- name: BPM
+- name: SOA
+- name: UMS
+
+
+ess_enabled: false
+ess_java_args: "-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m"
+ess_cluster: ess_cluster
+ess_port: 8021
+ess_servers:
+- index: 1
+  name: ess_server1
+  address: testlinbpm1.bgu.ac.il
+  machine: testlinbpm1
+- index: 2
+  name: ess_server2
+  address: testlinbpm2.bgu.ac.il
+  machine: testlinbpm2
+
+bam_enabled: false
+bam_java_args: "-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m"
+bam_cluster: bam_cluster
+bam_port: 9001
+bam_servers:
+- index: 1
+  name: bam_server1
+  address: testlinbpm1.bgu.ac.il
+  machine: testlinbpm1
+- index: 2
+  name: bam_server2
+  address: testlinbpm2.bgu.ac.il
+  machine: testlinbpm2
+
+time_to_wait_for_admin_svr_start: 120
+soa_infra_start_wait_in_minutes: 10
+
+opatch_version: 13.9.4.2.4
+opatch_patch: "{{ installers }}/patches/p28186730_139424_Generic.zip"
+opatch_patch_id: 6880880
+
+middleware_patches:
+- { "file": "{{ installers }}/patches/p30689820_122140_Generic.zip", "id": "30689820", "apply_to_oracle_common_home": true, "apply_to_product_home": false, "comment": "WLS Bundle Patch 12.2.1.4.191220" }
+- { "file": "{{ installers }}/patches/p30729380_122140_Generic.zip", "id": "122143", "apply_to_oracle_common_home": true, "apply_to_product_home": false, "comment": "Coherence cumulative Patch 12.2.1.4.3" }
+
+soa_patches:
+- { "file": "{{ installers }}/patches/p30188289_122140_Generic.zip", "id": "30188289", "apply_to_oracle_home": false, "apply_to_product_home": true, "comment": "SOA and BPM Patchset" }
+- { "file": "{{ installers }}/patches/p30638101_122140_Generic.zip", "id": "30638101", "apply_to_oracle_home": false, "apply_to_product_home": true, "comment": "SOA Bundle Patch 12.2.1.4.191208" }
+
+osb_patches:
+- { "file": "{{ installers }}/patches/p30292758_122140_Generic.zip", "id": "30292758", "apply_to_oracle_home": false, "apply_to_product_home": true, "comment": "OSB12c adminis slow" }
+- { "file": "{{ installers }}/patches/p30478215_122140_Generic.zip", "id": "30478215", "apply_to_oracle_home": false, "apply_to_product_home": true, "comment": "AdminServer High Heap consumption" }
+- { "file": "{{ installers }}/patches/p30857087_122140_Generic.zip", "id": "30857087", "apply_to_oracle_home": false, "apply_to_product_home": true, "comment": "OSB Throttling state cannot be enabled in EM" }
+- { "file": "{{ installers }}/patches/p30901975_122140_Generic.zip", "id": "30901975", "apply_to_oracle_home": false, "apply_to_product_home": true, "comment": "Patch 30282587 causes AdminServer slow start" }
+- { "file": "{{ installers }}/patches/p30966501_122140_Generic.zip", "id": "30966501", "apply_to_oracle_home": false, "apply_to_product_home": true, "comment": "Merge of BUGS 25434715 28970552 29390795" }
+- { "file": "{{ installers }}/patches/p31174525_122140_Generic.zip", "id": "31174525", "apply_to_oracle_home": false, "apply_to_product_home": true, "comment": "Merge of BUGS 30680769 30761484" }
+- { "file": "{{ installers }}/patches/p31621101_122140_Generic.zip", "id": "31621101", "apply_to_oracle_home": false, "apply_to_product_home": true, "comment": "Merge of BUGS 30584890 31511103 31581418" }
+
+users:
+- name: oracleacs
+  nick: oracleacs
+  pass: <USER_PASS>
+  desc: This is Oracle ACS user.
+  groups:
+  - group: Administrators
+- name: monitor-user
+  nick: monitoruser
+  pass: <USER_PASS>
+  desc: BOJ user
+  groups:
+  - group: Monitors
+- name: cn-user
+  nick: cnuser
+  pass: <USER_PASS>
+  desc: CN user
+  groups: []
+
+file_stores:
+- name: OSBServicesFileStore 
+
+jms_servers:
+- name: OSB_JMSServer
+  persiststore: ''
+- name: OSBServicesPersistantJMSServer
+  persiststore: OSBServicesFileStore
+
+jms_modules:
+- name: SOMEJMSModule
+  targets:
+  - name: OSBCluster
+    type: Cluster
+  subdeployments:
+  - name: SOMEJMSSUB
+    target: OSBServicesPersistantJMSServer
+  cfs:
+  - name: SOME_CF 
+    xa: true
+  queues:
+  - name: SendChequeDataToBankErrorQueue
+    subdeployment: SendChequeDataToBankSubDeployment
+    type: queue
+    target: OSBServicesPersistantJMSServer
+    errorqueue: ''
+    subQueues: []
+  - name: SendChequeDataToBankQueue
+    subdeployment: SendChequeDataToBankSubDeployment
+    type: queue
+    target: OSBServicesPersistantJMSServer
+    errorqueue: SendChequeDataToBankErrorQueue
+    subQueues: []
+  - name: SendChequeDataToBankQueue
+    subdeployment: ''
+    type: weighted
+    target: ''
+    errorqueue: ''
+    subQueues: 
+    - name: SendChequeDataToBankQueue
+  - name: SendChequeDataToBankErrorQueue
+    subdeployment: ''
+    type: weighted
+    target: ''
+    errorqueue: '' 
+    subQueues:
+    - name: SendChequeDataToBankErrorQueue
+
+data_sources:
+- name: ORCL_DS
+  jndi: ORCL_JNDI
+  type: Oracle
+  driver: oracle.jdbc.OracleDriver
+  driver_type: non-xa
+  driver_url: 'jdbc:oracle:thin:@ORCL_IP:ORCL_PORT/ORCL_SERVICE'
+  user: DEV_SOAINFRA
+  password: <SCHEMA_PASSWORD>
+  initial: 1
+  max: 15
+  min: 1
+  targets:
+  - name: OSBCluster
+    type: Cluster
+  properties: []
+- name: MSSQL_DS
+  jndi: MSSQL_JNDI
+  type: MS
+  driver: weblogic.jdbc.sqlserver.SQLServerDriver
+  driver_type: non-xa
+  driver_url: jdbc:weblogic:sqlserver://MSSQL_IP:MSSQL_PORT
+  user: USERNAME
+  password: <SCHEMA_PASSWORD>
+  initial: 1
+  max: 15
+  min: 1
+  targets:
+  - name: OSBCluster
+    type: Cluster
+  properties:
+  - key: portNumber
+    value: MSSQL_PORT
+  - key: databaseName
+    value: MSSQL_DB
+  - key: serverName
+    value: MSSQL_IP
+
+adapters:
+- adapter: DB
+  enabled: True
+  name: DbAdapter.rar
+  planName: DB_Plan.xml
+  cfs: 
+  - name: eis/db/aiaB2BInfraDBCF
+    ds: jdbc/SOADataSource
+    dsType: xa
+  - name: eis/DB/SOA
+    ds: jdbc/SOALocalTxDataSource
+    dsType: non-xa
+  - name: DB/eis/logs
+    ds: ExternalLogs
+    dsType: xa
+
+- adapter: JMS
+  enabled: False
+  name: JmsAdapter.rar
+  planName: JMS_Plan.xml
+  cfs: []

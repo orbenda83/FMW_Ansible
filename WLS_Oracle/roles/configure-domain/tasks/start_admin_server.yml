@@ -1,0 +1,26 @@
+---
+
+
+- name: Check if admin is running.
+  become_user: root
+  wait_for:
+    port: "{{ domain_info.admin.port }}"
+    host: "{{ domain_info.admin.listen_address }}"
+    delay: 1
+    timeout: 2
+    msg: "Timeout waiting for admin to respond"
+  register: port_check
+  ignore_errors: yes
+
+- block:
+  - name: start weblogic admin as a background process.
+    shell: "{{ wl_domain_home }}/startWebLogic.sh"
+    become_user: "{{ oracle_user }}"
+
+  - name: wait until admin server has started
+    become_user: root
+    wait_for:
+      path: "{{ admin_server_dir }}/logs/{{ domain_info.admin.name }}.out"
+      search_regex: 'Server started in RUNNING mode'
+      timeout: "{{ time_to_wait_for_admin_svr_start }}"
+  when: port_check.failed == true

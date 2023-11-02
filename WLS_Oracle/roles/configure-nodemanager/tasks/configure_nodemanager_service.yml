@@ -1,0 +1,60 @@
+---
+- name: Create systemd Node Manager service for Centos 7
+  become_user: root
+  template:
+    src: nodemanager.service.j2
+    dest: "/etc/systemd/system/nodemanager_{{ wls_domain_name }}.service"
+  when: ansible_distribution_major_version == '7'
+  become: True
+
+- name: Create systemd Node Manager manage script
+  become_user: root
+  template:
+    src: "{{ item }}"
+    dest: "{{ wls_domain_home}}/bin/{{ item }}"
+    owner: "{{ oracle_user }}"
+    mode: 0755
+  when: ansible_distribution_major_version == '7'
+  become: True
+  with_items:
+    - manageNM.sh
+    - nmStart.sh
+
+- name: Set Node Manager manage properties
+  become_user: root
+  template:
+    src: nodemanager.properties.j2
+    dest: "{{ wls_domain_home}}/nodemanager/nodemanager.properties"
+    owner: "{{ oracle_user }}"
+    mode: 0755
+
+- name: Make sure a service is running
+  become_user: root
+  systemd:
+    state: started
+    name: "nodemanager_{{ wls_domain_name }}"
+    daemon_reload: yes
+    enabled: yes
+
+- name: Ensure a node manager runs with crontab
+  become_user: root
+  cron:
+    name: "Start NodeManager"
+    minute: "*/10"
+    user: "{{ oracle_user }}"
+    job: "{{ wls_domain_home }}/bin/nmStart.sh"
+    
+- name: Ensure a node manager runs with crontab on reboot
+  become_user: root
+  cron:
+    name: "Start NodeManager on reboot"
+    special_time: reboot
+    user: "{{ oracle_user }}"
+    job: "{{ wls_domain_home }}/bin/nmStart.sh"
+    
+- name: Make user Oracle work with crontab
+  become_user: root
+  lineinfile:
+    path: /etc/cron.allow
+    state: present
+    line: 'oracle'

@@ -1,0 +1,4 @@
+---
+
+- include: install_java.yml
+- include: fix_java_urandom_issue.yml

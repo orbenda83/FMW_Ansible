@@ -1,0 +1,36 @@
+---
+
+- set_fact:
+   template_name: "{{ domain_template_dir }}/{{ wls_domain_name }}_{{ soa_env }}.jar"
+
+- name: create the directory required to store packed wld
+  become_user: root
+  file:
+    state: directory
+    path: "{{ domain_template_dir }}"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"
+
+- name: Remove old template
+  become_user: root
+  file:
+    state: absent
+    path: "{{ template_name }}"
+    
+- name: execute pack wld
+  shell: "{{ wl_pack_command }} -domain={{ wls_domain_home }} -template={{ template_name }} -template_name={{ wls_domain_name }} -managed=true"
+  become: yes
+  become_user: "{{ oracle_user }}"
+
+- name: copy the template file to the share
+  become_user: root
+  fetch:
+    src: "{{ template_name }}"
+    dest: /tmp/{{ wls_domain_name }}/
+    flat: yes
+
+#  become: true
+#  copy:
+#    remote_src: true
+#    src: "{{ template_name }}"
+#    dest: "{{ installers }}/managed_svr_templates/{{ wl_domain_name }}_template.jar"

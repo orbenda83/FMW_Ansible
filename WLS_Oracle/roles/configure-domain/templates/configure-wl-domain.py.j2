@@ -1,0 +1,37 @@
+#=======================================================================================
+#=======================================================================================
+#
+# This python script configures wl domain.
+#
+#=======================================================================================
+import sys
+domain_name='{{ wl_domain_name }}'
+
+def configure_providers():
+
+  {% if domain_info.auth_providers is defined %}
+  {%for item in domain_info.auth_providers %}
+
+   cd('/SecurityConfiguration/SOAOIMDomain/Realms/myrealm/AuthenticationProviders/OIMAuthenticationProvider')
+   provider_path = '/SecurityConfiguration/'+domain_name+'/Realms/myrealm/AuthenticationProviders/{{ item.objname }}'
+   prop_name = '{{ item.property }}'
+   prop_value = '{{ item.value }}'
+   print provider_path
+   cd(provider_path)
+   set(prop_name,prop_value)
+
+  {% endfor  %}
+  {% endif  %}
+
+admin_user_name= '{{ domain_info.admin.user }}'
+password='{{ domain_info.admin.password }}'
+admin_listen_address='{{ domain_info.admin.listen_address }}'
+admin_listen_port='{{ domain_info.admin.port }}'
+connect(admin_user_name,password,'t3://'+admin_listen_address+':'+admin_listen_port)
+edit()
+startEdit()
+configure_providers()
+save()
+activate()
+print "successfully configured wls domain"
+exit()

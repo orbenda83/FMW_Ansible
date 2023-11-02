@@ -1,0 +1,4 @@
+mgd_svr_archives_to_copy:
+   - source: "{{ osb_relase_repo }}/files_to_copy/lmoraru.tar"
+     destination: "{{ app_mount }}/"
+     to_folder: lmoraru

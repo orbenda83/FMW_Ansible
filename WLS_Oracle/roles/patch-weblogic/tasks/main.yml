@@ -1,0 +1,2 @@
+---
+- include: apply_patches.yml

@@ -1,0 +1,48 @@
+---
+- hosts: bpm
+  vars_files:
+    - vars/fusion.yml
+    - vars/bpm/common.yml
+  roles:
+    - role: common
+    - role: install-java
+    - role: install-middleware-infrastructure    # install-weblogic
+    - role: patch-middleware                     # patch-weblogic
+    - role: install-soa
+    - role: patch-soa
+
+- hosts: bpm-admin
+  vars_files:
+    - vars/fusion.yml
+    - vars/bpm/common.yml
+    - vars/bpm/wls_domain.yml
+    - vars/bpm/common_resources_to_copy.yml
+  roles:
+    - role: rcu
+    - role: configure-domain
+    - role: copy-resources
+  #  - role: migrate-security-relam
+    - role: start-adminsvr
+  #  - role: customize-bpm-apps
+    - role: pack-domain
+
+- hosts: bpm-managed
+  vars_files:
+    - vars/fusion.yml
+    - vars/bpm/common.yml
+    - vars/bpm/wls_domain.yml
+    - vars/bpm/common_resources_to_copy.yml
+  roles:
+    - role: unpack-domain-for-mgd-svrs
+    - role: copy-resources
+    - role: setup-nodemanager
+    
+- hosts: bpm-admin
+  vars_files:
+    - vars/fusion.yml
+    - vars/bpm/common.yml
+    - vars/bpm/wls_domain.yml
+    - vars/bpm/common_resources_to_copy.yml
+  roles:
+    - role: start-adminsvr
+    - role: start-mgd_svrs

@@ -1,0 +1,29 @@
+---
+
+    - name: Copy Nodemanager Properties file
+      template:
+        src: nodemanager.properties
+        dest: "{{ wls_home }}/common/nodemanager/"
+        owner: "{{ oracle_user }}"
+        group: "{{ oracle_install_group }}"
+
+    - name: copy service file for nodemanager.
+      template:
+        src: wls_nodemanager_service
+        dest: /etc/init.d
+        mode: a+x
+
+    - name: Enable nodemanager as linux service
+      command: 'chkconfig --add wls_nodemanager_service'
+
+    - name: start the node manager service.
+      service:
+        name: wls_nodemanager_service
+        state: started
+
+    - name: Waiting for nodemanager to come up
+      wait_for:
+        port: "{{ wls_nm_listen_port }}"
+        host: "{{ ansible_hostname }}"
+        delay: 2
+        timeout: 30

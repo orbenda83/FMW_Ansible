@@ -1,0 +1,31 @@
+---
+- name: Copy script to stop the db instance.
+  template:
+    src=stop.sql.j2
+    dest={{ working_directory }}/stop.sql
+    mode=755
+- set_fact:
+    grep_command: "ps -ef | grep pmon | grep -v grep | awk '{ print $8 }' | cut -d '_' -f3"
+# if database names are provided, then look only for those ones.
+- block:
+  - set_fact:
+      db_name_pattern: "{{ dbs_to_shut_down|join('|') }}"
+  - set_fact:
+      grep_command: "ps -ef | grep pmon | grep -v grep | grep -E '{{ db_name_pattern }}' | awk '{ print $8 }' | cut -d '_' -f3"
+  when: dbs_to_shut_down is defined and (shutdown_all_dbs is not defined or shutdown_all_dbs!=true)
+
+- block:
+  - name: Find the database processes running for the specified instances.
+    shell: "{{ grep_command }}"
+    register: running_db_names
+
+  - name: stop the DB
+    shell: "echo exit | {{ oracle_home }}/bin/sqlplus / as sysdba @{{ working_directory }}/stop.sql"
+    environment:
+      ORACLE_HOME: "{{ oracle_home }}"
+      ORACLE_SID: "{{ item }}"
+    register: command_result
+    become_user: oracle
+    failed_when: "'ORACLE instance shut down.' not in command_result.stdout_lines"
+    with_items: "{{ running_db_names.stdout_lines }}"
+  when: dbs_to_shut_down is defined or (shutdown_all_dbs is defined or shutdown_all_dbs==true)

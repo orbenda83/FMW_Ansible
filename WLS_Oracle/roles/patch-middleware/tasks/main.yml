@@ -1,0 +1,3 @@
+---
+- include: verify_opatch.yml
+- include: apply_patches.yml

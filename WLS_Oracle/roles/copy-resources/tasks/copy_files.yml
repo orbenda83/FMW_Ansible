@@ -1,0 +1,11 @@
+
+- include: prepare_for_copy.yml
+
+- name: Copy file to the destination
+  copy:
+    src: "{{ item.source }}"
+    dest: "{{ destination_folder }}/{{ item.to_name }}"
+    remote_src: yes
+    owner: "{{ owner }}"
+    group: "{{ group }}"
+    mode: "{{ mode }}"

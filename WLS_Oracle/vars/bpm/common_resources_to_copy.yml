@@ -1,0 +1,11 @@
+
+
+
+common_files_to_copy:
+   - source: "{{ osb_relase_repo }}/plans/connectors/plan/DBPlan.xml"
+     destination: "{{ osb_home }}/soa/connectors/"
+     to_name: DBPlan.xml
+
+   - source: "{{ osb_relase_repo }}/plans/connectors/plan/AQPlan.xml"
+     destination: "{{ osb_home }}/soa/connectors/"
+     to_name: AQPlan.xml

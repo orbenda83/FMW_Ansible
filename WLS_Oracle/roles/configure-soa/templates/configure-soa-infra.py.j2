@@ -1,0 +1,163 @@
+#=======================================================================================
+#=======================================================================================
+#
+# This python script configures soa infra.
+#
+#=======================================================================================
+import sys
+from time import strftime, sleep
+
+def update_composite_ref_prop(name,prop_name,  prop_value):
+  print "updating composite reference"
+  mbeans =mbs.queryNames( ObjectName(name), None);
+  mbean = mbeans.iterator().next();
+  properties = mbs.getAttribute(mbean, "Properties");
+
+  for i in range(0, len(properties)):
+    prop=properties[i]
+    if prop.get("name")==prop_name:
+      key_set = prop.getCompositeType().keySet()
+      # array
+      keys = key_set.toArray()
+      # list
+      keyitems = [ key for key in keys ]
+      values = prop.getAll(keyitems)
+      cnt = 0
+      new_items = java.util.HashMap()
+      for key in keys:
+         if key == 'value':
+             values[cnt] = prop_value
+             new_prop = CompositeDataSupport(prop.getCompositeType(), keyitems, values)
+             properties[i]= new_prop
+             mbs.setAttribute(mbean,Attribute("Properties", properties));
+             break;
+         cnt = cnt + 1
+
+def update_composite_ref_props():
+
+{% if composite_ref_updates is defined %}
+
+{% for update in composite_ref_updates %}
+
+  name='{{ update.name }}'
+  prop_name = '{{ update.prop_name }}'
+  prop_value = '{{ update.prop_value }}'
+  update_composite_ref_prop(name,prop_name,prop_value)
+
+{% endfor %}
+
+
+{% else %}
+
+  print "No composite end point defined for updates"
+
+{% endif %}
+
+def get_one_of_the_soa_servers():
+
+{% for mgd_server in domain_info.managed_servers %}
+
+{% if mgd_server.cluster == soa_cluster %}
+
+    server_name= '{{mgd_server.name }}'
+    return server_name
+{% endif %}
+{% endfor %}
+
+def get_server_url(name ):
+
+{% for mgd_server in domain_info.managed_servers %}
+
+{% if mgd_server.cluster== soa_cluster %}
+
+    server_name= '{{mgd_server.name }}'
+    if server_name == name:
+      t3url='t3://{{ mgd_server.listen_address }}:{{mgd_server.listen_port }}'
+      return t3url
+{% endif %}
+
+{% endfor %}
+
+def configure_soa_infra(server_name):
+
+ {% if infra_config_changes is defined %}
+ {% for changes in infra_config_changes %}
+
+    obj_name = '{{ changes.object_name }}'
+    attr_name = '{{ changes.attribute_name }}'
+    attr_value = '{{ changes.attribute_value }}'
+    workflow_config = ObjectName(obj_name)
+    attribute = Attribute(attr_name, attr_value)
+    mbs.setAttribute(workflow_config, attribute)
+    print '*** soa-infra: set ', mbs.getAttribute(workflow_config, attr_name)
+
+  {% endfor %}
+
+  {% else %}
+
+   print "nothing to configure"
+  {% endif %}
+
+
+def wait_till_servers_are_started (tasks):
+  print "starting managed server, will take a while for servers to start"
+  while len(tasks) > 0:
+    for server,task in tasks.iteritems():
+     if task.getStatus()  != 'TASK IN PROGRESS' :
+        state=check_srvr_running(server)
+        if state != true:
+            print "server " +server+ " failed to startup please check logs"
+            sys.exit(1)
+        del tasks[server]
+    java.lang.Thread.sleep(10000)
+
+def check_srvr_running(server_name):
+  domainRuntime()
+  cd("/ServerLifeCycleRuntimes/" + server_name)
+  serverState = cmo.getState()
+  print 'Server ' +server_name+ ' is : ' + serverState
+  if serverState != "RUNNING":
+    return false
+  return true
+
+admin_user_name= '{{ domain_info.admin.user }}'
+password='{{ domain_info.admin.password }}'
+admin_listen_address='{{ domain_info.admin.listen_address }}'
+admin_listen_port='{{ domain_info.admin.port }}'
+
+
+connect(admin_user_name,password,'t3://'+admin_listen_address+':'+admin_listen_port)
+start_tasks={}
+soa_server=get_one_of_the_soa_servers()
+
+is_server_running=check_srvr_running(soa_server)
+if is_server_running != true:
+  tasks={}
+  tasks[soa_server]=start(soa_server,'Server',block='false')
+  print soa_server +' has been started, will wait for the server to come up'
+  wait_till_servers_are_started(tasks)
+# server is running, now let us wait for soa infra.
+name = ObjectName('oracle.soa.config:Location='+soa_server+',name=soa-infra,j2eeType=CompositeLifecycleConfig,Application=soa-infra')
+domainRuntime()
+isReady=-1
+iteration=0
+while(isReady != 1):
+    if iteration > {{ soa_infra_start_wait_in_minutes }}:
+        raise "SOA Platform failed to come up in {{ soa_infra_start_wait_in_minutes }} minutes, check "+ soa_server + " server logs"
+    compositeData =mbs.getAttribute(name, "SOAPlatformStatus");
+    isReady = compositeData.get("isReady")
+    if isReady==1:
+      break
+    java.lang.Thread.sleep(60000)
+    iteration=iteration +1;
+configure_soa_infra(soa_server)
+
+#disconnect from admin server.
+disconnect()
+mgd_url= get_server_url(soa_server)
+#connect to managed server.
+connect(admin_user_name,password,mgd_url)
+update_composite_ref_props()
+shutdown()
+print "successfully configured soa infra"
+exit()

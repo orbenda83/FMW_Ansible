@@ -1,0 +1,7 @@
+- name: change kernel parameters
+  sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+  with_dict: "{{ kernel_params_to_be_set }}"
+  when: kernel_params_to_be_set is defined

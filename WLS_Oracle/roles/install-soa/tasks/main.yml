@@ -1,0 +1,4 @@
+---
+
+- include: create_central_inventory.yml
+- include: execute_installation.yml

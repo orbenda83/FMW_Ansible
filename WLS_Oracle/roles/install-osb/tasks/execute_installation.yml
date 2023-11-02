@@ -1,0 +1,36 @@
+---
+
+- name: create OSB silient response file
+  become: true
+  become_user: root
+  template:
+    src: templates/osb_silent_response.rsp.j2
+    dest: "{{ working_directory }}/{{ osb_silent_file }}"
+    mode: 0755
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"
+
+- name: Copy OSB install file to the destination
+  become: true
+  become_user: root
+  copy:
+    src: "{{ installers }}/{{ osb_installer_file }}"
+    dest: "{{ app_mount }}/install"
+    remote_src: no
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_install_group }}"
+    mode: "0755"
+    
+- name: Execute the silent OSB install
+  command: "{{ java_home}}/bin/java -Xms1024m -Xmx1024m -jar {{ app_mount }}/install/{{ osb_installer_file }} -silent -ignoreSysPrereqs -invPtrLoc {{ invptr_location }} -responseFile {{ working_directory }}/{{ osb_silent_file }}"
+  become_user: "{{ oracle_user }}"
+  args:
+    creates: "{{ osb_home }}"
+  register: command_result
+
+- name: Validate the create output to see all went well.
+  assert:
+    that:
+      - "'The installation of Oracle Fusion Middleware.*completed successfully.' not in command_result.stdout_lines"
+    msg: "The installation of Oracle Fusion Middleware SOA Suite and Business Process Management failed. Please check the logs."
+  when: command_result.changed

@@ -1,0 +1,114 @@
+#############################################################################
+# Properties for Creating SOA, BPM, OSB Domain
+#
+# @author Martien van den Akker, Darwin-IT Professionals
+# @version 1.0, 2016-04-15
+#
+# @editor Or Ben-David, FMW ACS IL, Oracle
+# @version 2.0, 2020-03-18
+#
+#############################################################################
+
+#
+fmwHome={{ middleware_home }}
+
+#
+soaDomainName={{ wls_domain_name }}
+domainsHome={{ middleware_home }}/user_projects/domains
+applicationsHome={{ middleware_home }}/user_projects/applications
+productionMode=true
+#
+
+# Server Settings
+serversNumber={{ servers | length }}
+serverAddresses={% for i in servers %}{{ i.address }}{{ "," if not loop.last else "" }}{% endfor %}
+
+serverMachines={% for i in servers %}{{ i.machine }}{{ "," if not loop.last else "" }}{% endfor %}
+
+#
+
+# Properties for AdminServer
+adminServerName=AdminServer
+adminMachine={{ servers[0].machine }}
+adminListenAddress={{ admin_server_address }}
+adminListenPort={{ admin_server_port }}
+adminJavaArgsBase={{ admin_server_args }}
+
+# Properties for OSB
+osbEnabled={{ osb_enabled | lower }}
+osbJavaArgsBase={{ osb_java_args }}
+osbClr={{ osb_cluster }}
+osbNumber={{ osb_servers | length }}
+osbSvrNames={% for i in osb_servers %}{{ i.name }}{{ "," if not loop.last else "" }}{% endfor %}
+
+osbSvrAddresses={% for i in osb_servers %}{{ i.address }}{{ "," if not loop.last else "" }}{% endfor %}
+
+osbSvrMachines={% for i in osb_servers %}{{ i.machine }}{{ "," if not loop.last else "" }}{% endfor %}
+
+osbSvrPort={{ osb_port | default(8011)}}
+
+# Properties for SOA
+soaEnabled={{ soa_enabled | lower }}
+bpmEnabled={{ bpm_enabled | lower }}
+b2bEnabled={{ b2b_enabled | lower }}
+soaJavaArgsBase={{ osb_java_args }}
+soaClr={{ soa_cluster }}
+soaNumber={{ soa_servers | length }}
+soaSvrNames={% for i in soa_servers %}{{ i.name }}{{ "," if not loop.last else "" }}{% endfor %}
+
+soaSvrAddresses={% for i in soa_servers %}{{ i.address }}{{ "," if not loop.last else "" }}{% endfor %}
+
+soaSvrMachines={% for i in soa_servers %}{{ i.machine }}{{ "," if not loop.last else "" }}{% endfor %}
+
+soaSvrPort={{ soa_port | default(8001)}}
+
+soaIsMigratable={{ is_migratable | lower }}
+soaObjectsPrefixes={% for i in soa_objects_prefixes %}{{ i.name }}{{ "," if not loop.last else "" }}{% endfor %}
+
+
+# Properties for ESS
+essEnabled={{ ess_enabled | lower }}
+essJavaArgsBase={{ ess_java_args }}
+essClr={{ ess_cluster }}
+essNumber={{ ess_servers | length }}
+essSvrNames={% for i in ess_servers %}{{ i.name }}{{ "," if not loop.last else "" }}{% endfor %}
+
+essSvrAddresses={% for i in ess_servers %}{{ i.address }}{{ "," if not loop.last else "" }}{% endfor %}
+
+essSvrMachines={% for i in ess_servers %}{{ i.machine }}{{ "," if not loop.last else "" }}{% endfor %}
+
+essSvrPort={{ ess_port | default(8021)}}
+
+# Properties for BAM
+bamEnabled={{ bam_enabled | lower }}
+bamJavaArgsBase={{ bam_java_args }}
+bamClr={{ bam_cluster }}
+bamNumber={{ bam_servers | length }}
+bamSvrNames={% for i in bam_servers %}{{ i.name }}{{ "," if not loop.last else "" }}{% endfor %}
+
+bamSvrAddresses={% for i in bam_servers %}{{ i.address }}{{ "," if not loop.last else "" }}{% endfor %}
+
+bamSvrMachines={% for i in bam_servers %}{{ i.machine }}{{ "," if not loop.last else "" }}{% endfor %}
+
+bamSvrPort={{ bam_port | default(9001)}}
+
+# AdminUser
+adminUser={{ wls_admin_user }}
+adminPwd={{ wls_admin_pass }}
+
+# SoaRepository Settings
+soaRepositoryDbUrl=jdbc:oracle:thin:@{{ db_server }}:{{ db_port }}/{{ db_service }}
+soaRepositoryDbUserPrefix={{ soa_repo_prefix }}
+soaRepositoryStbPwd={{ db_schema_common_password }}
+
+# Logs
+logsHome={{ middleware_home }}/user_projects/domains/{{ wls_domain_name }}/servers/logs
+fileCount=10
+fileMinSize=5000
+fileTimeSpan=24
+rotationType=byTime
+#
+
+# Settings
+webtierEnabled=false
+jsseEnabled=false

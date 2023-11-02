@@ -1,0 +1,43 @@
+https://wlstbyexamples.blogspot.com/
+http://itbuzzpress.com/weblogic-tutorials/oracle-weblogic-wlst.html
+http://www.learn-it-with-examples.com/middleware/weblogic/weblogic-scripting-tool/create-weblogic-data-source-wlst.html
+https://www.oracle.com/webfolder/technetwork/tutorials/obe/fmw/wls/12c/09-DeployPlan--4464/deployplan.htm
+
+
+
+Running wlst:
+${ORACLE_HOME}/wlserver_10.3/common/bin/wlst.sh 
+
+offline:\> help()
+offline:\> help('connect')
+BPMDomain:\> 
+
+
+1st way to invoke:
+${ORACLE_HOME}/wlserver_10.3/common/bin/wlst.sh/cmd/bat <script>.py [<extra args/properties file/etc>]
+
+example:
+${ORACLE_HOME}/wlserver_10.3/common/bin/wlst.sh JMS.py JMS_dev.properties
+/opt/oracle/middleware/oracle_common/common/bin/wlst.sh JMS.py JMS_Dev.properties
+
+2nd way to invoke:
+${ORACLE_HOME}/wlserver/server/bin/setWLSEnv.sh
+${JAVA_HOME}/bin/java weblogic.WLST <script>.py [<extra args/properties file/etc>]
+
+example:
+${ORACLE_HOME}/wlserver_10.3/common/bin/wlst.sh JMS.py JMS_dev.properties
+
+
+Decrypt/Encrypt password in WLS:
+domain="/home/xxx/.../domains"
+service=weblogic.security.internal.SerializedSystemIni.getEncryptionService(domain)
+encryption=weblogic.security.internal.encryption.ClearOrEncryptedService(service)
+print "The value is: %s" %encryption.decrypt("<encrypted_value>")
+
+
+DropRcuRepo:
+/opt/oracle/middleware/oracle_common/bin/rcu -silent -responseFile dropRcuResponseFile.properties
+
+
+ansible-playbook playbooks/main.yml -u osbsrv --limit dev -v -K -k
+ansible-playbook playbooks/osb-customize-domain.yml -u osbsrv --limit dev -v -K -k

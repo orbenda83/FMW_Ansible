@@ -1,0 +1,36 @@
+
+- name: replace the value in the supplied file.
+  replace:
+    path: "{{ item.dest }}"
+    regexp: "{{ item.from }}"
+    replace: "{{ item.to }}"
+    backup: yes
+  with_items: "{{ common_replacements }}"
+  when: common_replacements is defined
+
+- name: replace the value in the supplied file on admin servers.
+  replace:
+    path: "{{ item.dest }}"
+    regexp: "{{ item.from }}"
+    replace: "{{ item.to }}"
+    backup: yes
+  with_items: "{{ admin_svr_replacements }}"
+  when: admin_svr_replacements is defined
+
+- name: replace the value in the supplied file on managed servers.
+  replace:
+    path: "{{ item.dest }}"
+    regexp: "{{ item.from }}"
+    replace: "{{ item.to }}"
+    backup: yes
+  with_items: "{{ mgd_svr_replacements }}"
+  when: mgd_svr_replacements is defined
+
+- name: replace the value in the supplied file on managed server folders.
+  replace:
+    path: "{{ item.dest }}"
+    regexp: "{{ item.from }}"
+    replace: "{{ item.to }}"
+    backup: yes
+  with_items: "{{ mgd_svr_replacements }}"
+  when: mgd_svr_replacements is defined

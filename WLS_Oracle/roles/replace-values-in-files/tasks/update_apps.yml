@@ -1,0 +1,7 @@
+- include: replace_values_in_app_files.yml
+  with_items: "{{ common_replacements_in_apps }}"
+  when: common_replacements_in_apps is defined
+
+- include: replace_values_in_app_files.yml
+  with_items: "{{ admin_svr_replacements_in_apps }}"
+  when: admin_svr_replacements_in_apps is defined

@@ -1,0 +1,44 @@
+<project default="export">
+  <!-- ALSB domain creation project -->
+    
+  <property environment="env"/>
+  <property name="domain.export.script"   value="export.py"/>
+  <property name="domain.import.script"   value="import.py"/>
+  <property name="export.config.file"     value="export.properties"/>
+  <property name="import.config.file"     value="import.properties"/>
+  <property name="build"                  value="build"/>
+  <property name="dist"                   value="dist"/>
+  <property name="bea.home"               value="${env.BEA_HOME}"/>
+  
+  <path id="class.path">
+  	<pathelement path="${bea.home}/wlserver_10.3/server/lib/weblogic.jar"/>
+  	<pathelement path="${bea.home}/osb_10.3/lib/sb-kernel-api.jar"/>
+    <pathelement path="${bea.home}/modules/com.bea.common.configfwk_1.2.0.0.jar"/>
+  </path>
+
+  <taskdef name="wlst" classname="weblogic.ant.taskdefs.management.WLSTTask"/>
+
+  <target name="export">
+    <echo message="exportscript: ${domain.export.script}"/>
+    <java classname="weblogic.WLST" fork="true">
+        <arg line="${domain.export.script} ${export.config.file}"/>
+        <classpath refid="class.path"/>
+    </java>
+  </target>
+
+  <target name="import">
+    <echo message="importscript: ${domain.import.script}"/>
+    <java classname="weblogic.WLST" fork="true">
+        <arg line="${domain.import.script} ${import.config.file}"/>
+        <classpath refid="class.path"/>
+    </java>
+  </target>
+
+<target name="clean">
+    <delete dir="${dist}"/>
+    <delete dir="${build}"/>
+    <mkdir dir="${dist}"/>
+    <mkdir dir="${build}"/>
+  </target>
+
+</project>

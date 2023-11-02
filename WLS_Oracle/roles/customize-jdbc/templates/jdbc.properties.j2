@@ -1,0 +1,31 @@
+wls_user="{{ wls_admin_user }}"
+wls_pass="{{ wls_admin_pass }}"
+wls_admin="t3://{{ admin_server_address }}:{{ admin_server_port }}"
+
+############ JDBC Data Sources ############
+{% for data_source in data_sources %}
+{{ data_source.name }}={
+    "name": "{{ data_source.name }}",
+    "jndi": "{{ data_source.jndi }}",
+    "type": "{{ data_source.type }}",
+    "driver": "{{ data_source.driver }}",
+    "driver_type": "{{ data_source.driver_type }}",
+    "driver_url": "{{ data_source.driver_url }}",
+    "user": "{{ data_source.user }}",
+    "password": "{{ data_source.password }}",
+    "initial": {{ data_source.initial }},
+    "max": {{ data_source.max }},
+    "min": {{ data_source.min }},    
+    "targets": [{% for target in data_source.targets %}{
+        "name": "{{ target.name }}",
+        "type": "{{ target.type }}"
+    }{{ ',' if not loop.last else '' }}{% endfor %}],
+    "properties": [{% for property in data_source.properties %}{
+        "key": "{{ property.key }}",
+        "value": "{{ property.value }}"
+    }{{ ',' if not loop.last else '' }}{% endfor %}]
+}
+{% endfor %}
+
+dataSourcesArray=({% for data_source in data_sources %}{{ data_source.name }},{% endfor %})
+

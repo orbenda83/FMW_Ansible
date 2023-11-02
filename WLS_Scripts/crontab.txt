@@ -1,0 +1,4 @@
+@reboot /opt/fmw/Middleware/wlserver_10.3/server/bin/nmStart.sh
+*/10 * * * * /opt/fmw/Middleware/wlserver_10.3/server/bin/nmStart.sh
+@reboot /opt/fmw/Middleware/wlserver_10.3/server/bin/nmStartAdmin.sh
+*/10 * * * * /opt/fmw/Middleware/wlserver_10.3/server/bin/nmStartAdmin.sh

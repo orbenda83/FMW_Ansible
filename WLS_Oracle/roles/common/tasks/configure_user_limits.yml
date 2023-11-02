@@ -1,0 +1,10 @@
+---
+
+- name: add limits for oracle user
+  become: true
+  become_user: root
+  lineinfile:
+    dest: /etc/security/limits.conf
+    line: "{{ oracle_user }} {{ item.limit }} {{ item.type}} {{ item.value }}"
+  with_items: "{{ user_limits }}"
+  when: user_limits is defined

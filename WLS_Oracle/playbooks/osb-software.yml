@@ -1,0 +1,14 @@
+---
+- hosts: osb
+  vars_files:
+    - ../vars/fusion.yml
+    - ../vars/bpm/common.yml
+  roles:
+    - role: install-java
+    - role: install-middleware-infrastructure    # install-weblogic
+    - role: patch-middleware                     # patch-weblogic
+    - role: install-osb                          # install-osb
+#    - role: install-soa                          # install-soa
+    - role: patch-osb                            # patch-osb
+#    - role: patch-soa                            # patch-soa
+

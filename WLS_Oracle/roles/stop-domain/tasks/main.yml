@@ -1,0 +1,6 @@
+---
+
+
+- include: prepare_for_startup.yml
+- include: start_admin_server.yml
+- include: start_clusters.yml
